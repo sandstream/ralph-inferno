@@ -252,6 +252,13 @@ main() {
 
     # Count total specs (excluding CR-* files)
     local total_specs=$(ls -1 specs/*.md 2>/dev/null | grep -v "/CR-" | wc -l | tr -d ' ')
+
+    if [ "$total_specs" -eq 0 ]; then
+        log "${RED}Inga specs hittades i specs/*.md${NC}"
+        notify "❌ Inga specs hittades"
+        exit 1
+    fi
+
     local total_done=$(ls -1 .spec-checksums/*.md5 2>/dev/null | wc -l | tr -d ' ')
     log "${GREEN}=== Done: $total_done/$total_specs specs ===${NC}"
     log "${GREEN}=== This run: $specs_done completed, $specs_failed failed ===${NC}"
