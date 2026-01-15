@@ -70,6 +70,14 @@ main() {
     log "${CYAN}║      RALPH ORCHESTRATOR STARTING       ║${NC}"
     log "${CYAN}╚════════════════════════════════════════╝${NC}"
 
+    # Verify specs exist before starting
+    local total_specs=$(ls -1 specs/*.md 2>/dev/null | grep -v "^specs/CR-" | wc -l | tr -d ' ')
+    if [ "$total_specs" -eq 0 ]; then
+        log "${RED}Inga specs hittades i specs/*.md${NC}"
+        notify "❌ Orchestrator: Inga specs hittades"
+        return 1
+    fi
+
     notify "🎬 Orchestrator starting (max $MAX_ITERATIONS iterations)"
 
     start_services
