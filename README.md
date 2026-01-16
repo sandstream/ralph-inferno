@@ -176,7 +176,7 @@ Configuration is stored in `.ralph/config.json`:
 
 ```json
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "language": "en",
   "provider": "hcloud",
   "vm_name": "ralph-sandbox",
