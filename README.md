@@ -20,38 +20,107 @@
 
 AI-driven autonomous development workflow.
 
+## How It Works
+
+Ralph installs as **slash commands** in Claude Code. When you run `npx ralph-inferno install`, it creates a `.ralph/` folder with scripts and a `.claude/commands/` folder with command definitions. Claude Code automatically picks these up - no separate CLI needed!
+
+```
+Local Machine                      VM (Sandbox)
+┌─────────────────┐               ┌─────────────────┐
+│ Claude Code     │               │ Claude Code     │
+│ + Ralph commands│    GitHub     │ + ralph.sh      │
+│                 │ ────────────► │                 │
+│ /ralph:discover │               │ Runs specs      │
+│ /ralph:plan     │               │ autonomously    │
+│ /ralph:deploy   │               │                 │
+└─────────────────┘               └─────────────────┘
+```
+
+**The flow:**
+1. You work locally with Claude Code, using `/ralph:discover` and `/ralph:plan`
+2. `/ralph:deploy` pushes your specs to GitHub and starts Ralph on the VM
+3. Ralph runs autonomously on the VM while you sleep
+4. Next day: `/ralph:review` to test what was built
+
 ## Requirements
 
-**Local machine:**
-- Node.js (for npx)
-- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) (`claude`)
-- GitHub CLI (`gh`) - optional, for auto-detecting username
+### Local Machine
 
-**VM (where Ralph runs):**
-- A running VM/server (Hetzner, GCP, DigitalOcean, AWS, or your own)
-- SSH access to the VM
-- Git installed
-- Claude Code CLI with either:
-  - Anthropic API key (`ANTHROPIC_API_KEY`), or
-  - Claude subscription (requires `claude login` on the VM)
+| Tool | Required | How to install |
+|------|----------|----------------|
+| Node.js | Yes | `brew install node` |
+| Claude Code | Yes | `npm install -g @anthropic-ai/claude-code` |
+| GitHub CLI | Recommended | `brew install gh` then `gh auth login` |
 
-**Optional:**
-- **Claude Chrome Extension** - For best results in `/ralph:discover`, lets Claude browse websites you reference
-- Cloud CLI (`hcloud`, `gcloud`, `doctl`, `aws`) for VM management
-- [ntfy.sh](https://ntfy.sh) for notifications
+### VM (Sandbox)
+
+| Tool | Required | Notes |
+|------|----------|-------|
+| SSH access | Yes | You need to be able to SSH into the VM |
+| Git | Yes | Usually pre-installed |
+| Claude Code | Yes | `npm install -g @anthropic-ai/claude-code` |
+| Claude auth | Yes | Run `claude login` OR set `ANTHROPIC_API_KEY` |
+| GitHub CLI | Yes | `brew install gh` then `gh auth login` |
+
+**Important:** Both machines need `gh auth login` for Git operations to work!
+
+### Optional
+
+- **Claude Chrome Extension** - Lets Claude browse websites during `/ralph:discover`
+- Cloud CLI (`hcloud`, `gcloud`, `doctl`, `aws`) - For VM management
+- [ntfy.sh](https://ntfy.sh) - Push notifications when Ralph finishes
 
 ## Installation
 
+### Step 1: Install Ralph locally
+
 ```bash
+cd your-project
 npx ralph-inferno install
 ```
 
-This will:
-1. Show disclaimer (VM sandbox required)
-2. Ask for your preferences (language, cloud provider, etc.)
-3. Ask how Claude authenticates (subscription or API key)
-4. Install Ralph core files to `.ralph/`
-5. Create a `ralph` wrapper script
+This creates:
+- `.ralph/` - Scripts and config
+- `.claude/commands/` - Slash commands for Claude Code
+
+### Step 2: Set up your VM
+
+SSH into your VM and install the prerequisites:
+
+```bash
+# Install Node.js (if not installed)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Install Claude Code
+npm install -g @anthropic-ai/claude-code
+
+# Authenticate Claude (choose one):
+claude login                    # If you have Claude Pro/Max subscription
+# OR
+export ANTHROPIC_API_KEY="sk-ant-..."  # If using API key
+
+# Install and authenticate GitHub CLI
+sudo apt-get install gh
+gh auth login
+
+# Install Playwright dependencies (for E2E tests)
+npx playwright install-deps
+npx playwright install
+```
+
+### Step 3: Verify setup
+
+On your local machine, start Claude Code:
+```bash
+claude
+```
+
+Type `/ralph:` and you should see the available commands:
+- `/ralph:discover`
+- `/ralph:plan`
+- `/ralph:deploy`
+- etc.
 
 ## Update
 
@@ -59,6 +128,11 @@ Update core files while preserving your config:
 
 ```bash
 npx ralph-inferno update
+```
+
+Or use the slash command in Claude Code:
+```
+/ralph:update
 ```
 
 ## Workflow

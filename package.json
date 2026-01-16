@@ -1,7 +1,7 @@
 {
   "name": "ralph-inferno",
   "type": "module",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "AI-driven autonomous development workflow - Ralph builds while you sleep",
   "main": "bin/ralph-inferno.js",
   "bin": {

@@ -60,6 +60,13 @@ if [ "$errors" -gt 0 ]; then
     echo ""
     echo "⚠️ Errors found: $errors"
 fi
+
+# Show last error details if error log exists
+if [ -f ".ralph/logs/errors.log" ]; then
+    echo ""
+    echo "🔴 Last error (from .ralph/logs/errors.log):"
+    tail -30 .ralph/logs/errors.log
+fi
 EOF
 ```
 
