@@ -1,12 +1,12 @@
-# /ralph:discover - Interactive Requirements Discovery
+# /ralph:discover - BMAD Analyst Mode
 
-Start an interactive discovery session to create a PRD and set up the project.
+Autonom research och validering för att skapa en komplett PRD från PROJECT-BRIEF.
 
 ## Usage
 ```
-/ralph:discover [project-name]
-/ralph:discover my-app
-/ralph:discover my-app --input meeting-notes.md
+/ralph:discover                    # Använder docs/PROJECT-BRIEF.md
+/ralph:discover --input brief.md   # Custom input file
+/ralph:discover --greenfield       # Skip brief, starta från scratch
 ```
 
 ## LANGUAGE SETTING
@@ -17,134 +17,63 @@ LANG=$(grep -o '"language"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2
 echo "Language: ${LANG:-en}"
 ```
 
-Use the detected language (default: English) for ALL output (PRD, questions, comments).
-- `en` → Write everything in English
-- `sv` → Write everything in Swedish
-- etc.
+Use the detected language for ALL output.
 
-**IMPORTANT:** This includes specs, documentation, and user-facing text.
+---
 
-## CRITICAL INSTRUCTIONS
+## STEP 1: Input Source
 
-**NUMBERED CHOICES FORMAT - MANDATORY:**
-You MUST present ALL choices as numbered lists. Users respond with just a number.
-
-Format EVERY question exactly like this:
+### If PROJECT-BRIEF exists:
+```bash
+cat docs/PROJECT-BRIEF.md 2>/dev/null
 ```
-[Question text]
 
-1) Option one
-2) Option two
-3) Option three
+Visa brief och bekräfta:
+```
+Found PROJECT-BRIEF.md:
+- Idea: {one-liner}
+- Hook: {differentiator}
+
+1) Use this brief
+2) Start fresh (greenfield)
 
 Reply with number:
 ```
 
-NEVER ask open-ended questions when there are known options.
-ALWAYS wait for user to reply with a number before proceeding.
-If user types something other than a number, ask them to reply with just the number.
+### If no brief (or greenfield selected):
+
+Kör förenklad discovery:
+```
+What are we building?
+
+Describe the product in a few sentences:
+```
+
+Then continue with template selection (see STEP 2b below).
 
 ---
 
-## STEP 1: Project type
+## STEP 2: Choose Mode
 
 ```
-What type of project?
+How do you want to run discovery?
 
-1) Greenfield - New project from scratch
-2) Brownfield - Existing project
+1) Autonomous (YOLO) - I run all analyst techniques, you review PRD at the end
+2) Interactive - We go through each phase together
 
 Reply with number:
 ```
 
 ---
 
-## STEP 2: Project basics (Greenfield) or Source (Brownfield)
-
-### If Greenfield:
-
-Ask description first (free text): "What are we building?"
-
-Then suggest a project name based on the description:
-```
-Suggested project name: {smart-name-based-on-description}
-
-1) Use this name
-2) Enter my own name
-
-Reply with number:
-```
-
-If user picks 2, ask: "Project name?"
-
----
-
-## STEP 3: Feature suggestions (Greenfield only)
-
-**MANDATORY: IMMEDIATELY after getting the description, suggest features.**
-
-DO NOT ask "what features do you want?" - ANALYZE the description and SUGGEST.
-
-Examples:
-
-**Todo app** → auth, CRUD todos, complete status, due dates, categories, search, filters
-**Blog** → posts, comments, categories, tags, search, admin panel, RSS
-**E-commerce** → products, cart, checkout, payments, orders, user accounts
-**Chat app** → auth, messages, rooms, real-time, notifications, file sharing
-
-Format EXACTLY like this:
-```
-Based on "todo app", here are recommended features:
-
-1) User authentication (login/register)
-2) Create/edit/delete todos
-3) Mark todos as complete
-4) Due dates and reminders
-5) Categories/tags
-6) Search and filter
-7) All of the above
-
-Select features (e.g. "1,2,3" or "7" for all):
-```
-
-User selects by typing numbers like "1,3,5" or "7" for all.
-
-After selection: "Any additional features? (or 'none'):"
-
-Then: "Any constraints or requirements? (or 'none'):"
-
----
-
-## STEP 3b: Design preferences (Greenfield only)
-
-```
-Do you have design preferences?
-
-1) Yes - I have brand guidelines or a website I like (recommended if you have them)
-2) No - Use sensible defaults
-
-Reply with number:
-```
-
-If yes, ask:
-- "Brand guidelines URL or file path? (or 'none'):"
-- "Website you like the design of? (URL or 'none'):"
-- "Color preferences? (e.g. 'blue and white', 'dark mode', or 'none'):"
-
-Save these to PRD for reference during build.
-
----
-
-## STEP 4: Template selection (Greenfield only)
-
-Based on the description, check available templates and recommend:
+## STEP 2b: Template Selection (if greenfield)
 
 ```bash
 ls -1 .ralph/templates/stacks/ 2>/dev/null || echo "none"
 ```
 
 ```
-Based on your project, which template?
+Which template?
 
 1) react-supabase - React + Vite + Tailwind + Supabase (recommended for apps with auth/database)
 2) custom - Define your own stack
@@ -152,201 +81,397 @@ Based on your project, which template?
 Reply with number:
 ```
 
-If "custom" was selected:
-```
-Frontend framework?
+If custom, ask for frontend, backend, deploy target.
 
-1) React + Vite
-2) Next.js
-3) Vue
-4) Svelte
-5) Other
+---
 
-Reply with number:
-```
+## ANALYST TECHNIQUES (Kör alla!)
+
+### Technique 1: MARKET RESEARCH
 
 ```
-Backend?
-
-1) Supabase
-2) Firebase
-3) PostgreSQL + Express
-4) None (frontend only)
-5) Other
-
-Reply with number:
+🔍 MARKET RESEARCH
 ```
 
+**WebSearch:** Sök aktivt efter:
+- "{category} apps 2024"
+- "{product type} market size"
+- "best {category} tools comparison"
+- "{competitor name} reviews"
+
+**Analysera:**
+- Topp 3-5 konkurrenter
+- Deras styrkor och svagheter
+- Pricing models
+- User reviews (vad klagar folk på?)
+- Market gaps
+
+**Output:** Konkurrentanalys med actionable insights
+
+---
+
+### Technique 2: USER PERSONAS
+
 ```
-Deploy target?
+👤 USER PERSONAS
+```
 
-1) Vercel
-2) Netlify
-3) Railway
-4) Own server
-5) Not decided yet
+Baserat på PROJECT-BRIEF's target audience, skapa detaljerade personas:
 
-Reply with number:
+```
+PERSONA 1: {Namn}
+├── Demografi: {ålder, jobb, situation}
+├── Goals: {vad vill de uppnå?}
+├── Pains: {vad frustrerar dem?}
+├── Tech comfort: {low/medium/high}
+├── Current solution: {vad använder de nu?}
+└── Trigger: {vad får dem att söka ny lösning?}
+```
+
+**Minimum:** 2 personas (primary + secondary)
+
+---
+
+### Technique 3: USER JOURNEYS
+
+```
+🗺️ USER JOURNEYS
+```
+
+Mappa alla core flows:
+
+```
+JOURNEY: {Namn på flow, t.ex. "First todo"}
+
+1. TRIGGER: {Vad startar flödet?}
+2. ENTRY: {Hur kommer de in?}
+3. STEPS:
+   └── Step 1: {action} → {system response}
+   └── Step 2: {action} → {system response}
+   └── ...
+4. SUCCESS: {Vad är "done"?}
+5. EDGE CASES: {Vad kan gå fel?}
+```
+
+**Minimum flows:**
+- Onboarding/signup
+- Core action (create todo, send message, etc.)
+- Return visit
+- Error recovery
+
+---
+
+### Technique 4: FEATURE PRIORITIZATION
+
+```
+📋 FEATURE PRIORITIZATION
+```
+
+Ta alla feature ideas från PROJECT-BRIEF och prioritera:
+
+**MoSCoW Method:**
+
+| Priority | Features | Rationale |
+|----------|----------|-----------|
+| **Must** | {kritiskt för MVP} | Utan detta funkar inte appen |
+| **Should** | {viktigt men inte kritiskt} | Förbättrar upplevelsen |
+| **Could** | {nice-to-have} | Om tid finns |
+| **Won't** | {out of scope för v1} | Framtida version |
+
+**Effort/Impact Matrix:**
+```
+        HIGH IMPACT
+             │
+    Quick    │   Big Bets
+    Wins     │
+─────────────┼───────────── HIGH EFFORT
+    Fill     │   Money
+    Ins      │   Pit
+             │
+        LOW IMPACT
 ```
 
 ---
 
-## STEP 5: Tasks (Brownfield only)
-
-### If Brownfield:
+### Technique 5: TECHNICAL FEASIBILITY
 
 ```
-Where is the project?
-
-1) GitHub repo
-2) Local path
-
-Reply with number:
+🏗️ TECHNICAL FEASIBILITY
 ```
 
-If GitHub: Ask for "GitHub repo (user/repo):"
-If local: Ask for "Path to project:"
+**Validera tech stack:**
 
-Then read package.json to detect stack and show what was found.
+| Component | Choice | Rationale | Risk |
+|-----------|--------|-----------|------|
+| Frontend | {React/Vue/etc} | {varför} | {potential issues} |
+| Backend | {Supabase/etc} | {varför} | {potential issues} |
+| Auth | {method} | {varför} | {potential issues} |
+| Database | {type} | {varför} | {potential issues} |
+| Hosting | {provider} | {varför} | {potential issues} |
 
-```
-Is this stack detection correct?
+**WebSearch:** Sök efter:
+- "{tech} + {tech} integration"
+- "{tech} limitations"
+- "{tech} best practices 2024"
 
-1) Yes
-2) No, let me adjust
-
-Reply with number:
-```
-
-```
-What type of work?
-
-1) New features
-2) Bug fixes
-3) Refactoring
-4) Mix of above
-
-Reply with number:
-```
-
-Then ask (free text): "List the tasks to do (comma separated):"
-Then ask (free text): "Any project context I should know? (or 'none'):"
-Then ask (free text): "Files to avoid changing? (or 'none'):"
+**Identify:**
+- Technical risks
+- Unknown unknowns
+- Dependencies
+- Learning curve
 
 ---
 
-## STEP 6: Credentials (only if relevant)
+### Technique 6: SECURITY & COMPLIANCE
 
-If Supabase was selected:
 ```
-Do you have Supabase credentials ready?
-
-1) Yes, I'll add them to .env.local (recommended)
-2) No, I'll set up Supabase later
-
-Reply with number:
+🔒 SECURITY & COMPLIANCE
 ```
 
-If yes, remind them to add to `.env.local`:
-- SUPABASE_URL
-- SUPABASE_ANON_KEY
+**Checklist:**
 
-Similar for Firebase (FIREBASE_PROJECT_ID, FIREBASE_API_KEY).
+| Area | Requirement | Implementation |
+|------|-------------|----------------|
+| Auth | {how users login} | {JWT/session/etc} |
+| Data | {what data stored} | {encryption/etc} |
+| GDPR | {EU users?} | {consent/deletion/export} |
+| PCI | {payments?} | {Stripe/etc handles it} |
 
-**IMPORTANT:** NEVER store credentials in repo! Always use `.env.local` which is gitignored.
+**WebSearch:** Om relevant:
+- "GDPR requirements for {app type}"
+- "{industry} compliance requirements"
 
 ---
 
-## STEP 7: Confirm VM setup
+### Technique 7: BUSINESS MODEL
 
-Read config and show what's configured:
-```bash
-cat .ralph/config.json 2>/dev/null
+```
+💼 BUSINESS MODEL
 ```
 
-Show summary:
-```
-VM Configuration (from install):
-- Provider: {provider}
-- Region: {region}
-- VM name: {vm_name}
+| Aspect | Description |
+|--------|-------------|
+| **Revenue** | {hur tjänar vi pengar?} |
+| **Pricing** | {free/freemium/paid/subscription} |
+| **Costs** | {hosting, APIs, etc} |
+| **Unit economics** | {cost per user, etc} |
 
-To change: run "npx ralph-inferno install" again
-```
+**If learning project:** Note that business model is "N/A - learning project"
 
 ---
 
-## STEP 8: Generate output
+### Technique 8: DEVIL'S ADVOCATE (Final Challenge)
 
-When all info is collected:
-
-### 1. Create docs/prd.md
-```bash
-mkdir -p docs
+```
+😈 DEVIL'S ADVOCATE
 ```
 
-PRD should contain:
-- Project name and description
-- Type (greenfield/brownfield)
-- Tech stack
-- Features/tasks
-- Constraints
-- VM/deploy info (if configured)
+Utmana ALLT innan PRD anses klar:
 
-### 2. Copy template files (if template was selected)
-```bash
-# Copy CLAUDE.md
-cp .ralph/templates/stacks/{template}/CLAUDE.md CLAUDE.md
+```
+❓ Är MVP scope för stort?
+   → {assessment}
 
-# Copy requirements.sh to scripts
-cp .ralph/templates/stacks/{template}/scripts/requirements.sh .ralph/scripts/requirements.sh 2>/dev/null || true
+❓ Är tech stack rätt för problemet?
+   → {assessment}
+
+❓ Finns det okända risker vi missat?
+   → {assessment}
+
+❓ Är personas realistiska?
+   → {assessment}
+
+❓ Kan vi faktiskt bygga detta?
+   → {assessment}
 ```
 
-### 3. Generate CLAUDE.md (if no template)
+**Om något inte klarar challenge:** Gå tillbaka och fixa innan du fortsätter.
 
-If no template, create CLAUDE.md with:
+---
+
+## ITERATION LOOP
+
+```
+┌─────────────────────────────────────────┐
+│         PRD COMPLETENESS CHECK          │
+├─────────────────────────────────────────┤
+│ □ Market research - 3+ konkurrenter?    │
+│ □ Personas - 2+ med goals/pains?        │
+│ □ User journeys - Alla core flows?      │
+│ □ Features - MoSCoW prioriterade?       │
+│ □ Tech - Stack validerad?               │
+│ □ Security - Requirements identifierade?│
+│ □ Business - Model klar (eller N/A)?    │
+│ □ Devil's advocate - Passerad?          │
+│ □ Inga open questions kvar?             │
+└─────────────────────────────────────────┘
+```
+
+**Om något saknas:** Kör den tekniken igen.
+**Om motsägelser:** Lös dem innan du går vidare.
+
+---
+
+## DEFINITION OF DONE - Discovery
+
+| Kriterium | Verifiering |
+|-----------|-------------|
+| ✅ Alla 8 tekniker körda | Checklist komplett |
+| ✅ Minst 3 konkurrenter analyserade | Market research klar |
+| ✅ Minst 2 personas | Med goals & pains |
+| ✅ Core user journeys | Alla MVP-flows mappade |
+| ✅ Features prioriterade | MoSCoW eller liknande |
+| ✅ Tech stack validerat | Risker identifierade |
+| ✅ Security requirements | Definierade |
+| ✅ Devil's advocate passerad | Alla utmaningar addresserade |
+| ✅ Open Questions tom | Eller endast nice-to-have |
+
+---
+
+## OUTPUT: PRD.md
+
+När ALLA tekniker är klara, skapa `docs/PRD.md`:
+
 ```markdown
-# CLAUDE.md - {projectname}
+# [Produktnamn] - Product Requirements Document
 
-## Project
-{description}
+## Executive Summary
+{2-3 meningar som sammanfattar produkten}
 
-## Tech Stack
-- Frontend: {stack}
-- Backend: {stack}
+## Vision & Problem Statement
+{Vad löser vi? Varför behövs detta?}
+{Referera till PROJECT-BRIEF motivation}
 
-## Security Rules
+## Market Analysis
+### Competitive Landscape
+{Konkurrenter och positionering}
 
-CRITICAL - NEVER do:
-- rm -rf / or sudo rm
-- curl | bash or wget | bash
-- Expose credentials in code
-- Commit .env files
-- Hardcode API keys
+### Market Opportunity
+{Gaps vi fyller}
 
-SECRETS HANDLING:
-- .env files NEVER in repo
-- Use process.env.VAR_NAME
-- .gitignore MUST contain .env*
+## Target Users
+### Primary Persona: {Namn}
+{Full persona description}
 
-## Workflow
-1. Read spec carefully
-2. Implement step by step
-3. Run tests often
-4. Output `<promise>DONE</promise>` when done
+### Secondary Persona: {Namn}
+{Full persona description}
+
+## User Journeys
+### Journey 1: {namn}
+{Detaljerat flow}
+
+### Journey 2: {namn}
+{Detaljerat flow}
+
+## Feature Requirements
+
+### Must Have (MVP)
+| Feature | Description | Acceptance Criteria |
+|---------|-------------|---------------------|
+| {feature} | {what} | {how we know it works} |
+
+### Should Have
+{prioriterad lista}
+
+### Could Have
+{prioriterad lista}
+
+### Won't Have (v1)
+{explicit out of scope}
+
+## Technical Architecture
+### Stack
+{Frontend, Backend, Database, etc}
+
+### System Diagram
+{ASCII eller beskrivning}
+
+### Integrations
+{Externa API:er och tjänster}
+
+### Technical Risks
+{Identifierade risker och mitigations}
+
+## Security & Compliance
+{Auth, data, GDPR, etc}
+
+## Business Model
+{Revenue, pricing, costs - eller "N/A learning project"}
+
+## Success Metrics
+{Hur vet vi att produkten lyckas?}
+
+## Open Questions
+{MÅSTE VARA TOM för production-ready PRD}
+{OK att ha "nice-to-have" frågor}
+
+## Appendix
+### From PROJECT-BRIEF
+{Länk eller sammanfattning av brainstorm-fasen}
+
+---
+
+*Generated by Ralph Analyst Mode*
+*Next step: /ralph:plan to create implementation specs*
 ```
 
-### 4. Show summary
-- Confirm what was created:
-  - docs/prd.md - Product Requirements Document
-  - CLAUDE.md - Project instructions
-- List next steps:
-  1. `/ralph:plan` - Create implementation plan from PRD
-  2. `/ralph:deploy` - Send to VM and run autonomously
-  3. `/ralph:review` - Review results when done
+---
+
+## AFTER PRD: Setup Files
+
+### 1. Create/Update CLAUDE.md
+
+Om template valdes, kopiera:
+```bash
+cp .ralph/templates/stacks/{template}/CLAUDE.md CLAUDE.md
+```
+
+Om custom, generera CLAUDE.md med:
+- Project description
+- Tech stack
+- Security rules
+- Workflow instructions
+
+### 2. Create .env.example
+
+Om relevant (Supabase, etc):
+```bash
+cat > .env.example << 'EOF'
+# Supabase
+VITE_SUPABASE_URL=your-project-url
+VITE_SUPABASE_ANON_KEY=your-anon-key
+EOF
+```
+
+---
+
+## NÄR KLAR
+
+Visa PRD-sammanfattning och skriv:
+
+```
+DISCOVERY_COMPLETE
+
+PRD sparad till: docs/PRD.md
+
+Sammanfattning:
+- Produkt: {namn}
+- MVP Features: {antal} must-haves
+- Tech: {stack summary}
+- Personas: {antal}
+
+Nästa steg:
+1. Granska docs/PRD.md
+2. Kör /ralph:preflight för att verifiera requirements
+3. Kör /ralph:plan för att skapa implementation specs
+```
 
 ---
 
 ## START NOW
 
-Begin by checking templates and asking the first numbered question. Remember: ALL choices must be numbered, user replies with just a number.
+1. Check for PROJECT-BRIEF.md
+2. Ask for mode (Autonomous/Interactive)
+3. Run all analyst techniques
+4. Generate PRD.md
+5. Setup project files
