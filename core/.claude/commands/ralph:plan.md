@@ -1,15 +1,25 @@
 # /ralph:plan - Create Implementation Plan
 
-Analyze PRD and create implementation plan with executable specs.
+Analyze PRD or Change Request and create implementation plan with executable specs.
 
 ## Usage
 ```
-/ralph:plan                    # Uses docs/PRD.md
-/ralph:plan --input prd.md     # Custom PRD file
+/ralph:plan                         # Auto-detect input (PRD or CR)
+/ralph:plan --prd                   # Force PRD mode
+/ralph:plan --change-request        # Force Change Request mode
+/ralph:plan --input custom.md       # Custom input file
 ```
 
+## Two Entry Points
+
+| Source | Input | Output |
+|--------|-------|--------|
+| Greenfield (new app) | `docs/PRD.md` | Full spec sequence |
+| Brownfield (changes) | `docs/CHANGE-REQUEST-*.md` | CR-* specs |
+
 ## Prerequisites
-- `docs/PRD.md` must exist (run `/ralph:discover` first)
+- **Greenfield:** `docs/PRD.md` must exist (run `/ralph:discover` first)
+- **Brownfield:** `docs/CHANGE-REQUEST-*.md` must exist (run `/ralph:change-request` first)
 
 ## Output
 - `docs/IMPLEMENTATION_PLAN.md` - Overview with epics and tasks
@@ -27,17 +37,42 @@ Use the detected language for ALL output (specs, plans, comments).
 
 ---
 
-## STEP 1: Read PRD
+## STEP 1: Detect Input Source
 
 ```bash
-cat docs/PRD.md 2>/dev/null || echo "PRD not found"
+# Check for Change Request (most recent)
+CR_FILE=$(ls -t docs/CHANGE-REQUEST-*.md 2>/dev/null | head -1)
+
+# Check for PRD
+PRD_FILE="docs/PRD.md"
+
+if [ -n "$CR_FILE" ]; then
+    echo "Found Change Request: $CR_FILE"
+elif [ -f "$PRD_FILE" ]; then
+    echo "Found PRD: $PRD_FILE"
+else
+    echo "No input found"
+fi
 ```
 
-Om PRD saknas:
-```
-ERROR: docs/PRD.md not found.
+**Auto-detect logic:**
+1. If `CHANGE-REQUEST-*.md` exists → Change Request mode
+2. Else if `PRD.md` exists → PRD mode
+3. Else → Error
 
-Run /ralph:discover first to create PRD.
+```
+Detected input source:
+
+1) Change Request: {filename} (brownfield)
+2) PRD: docs/PRD.md (greenfield)
+3) Neither found - need to run /ralph:discover or /ralph:change-request first
+
+Using: {detected}
+
+1) Continue with detected source
+2) Switch to other source
+
+Reply with number:
 ```
 
 ---
@@ -56,6 +91,32 @@ Reply with number:
 ---
 
 ## PLANNING PHASES
+
+### For Change Requests (Brownfield)
+
+If input is a Change Request, the planning is simplified:
+
+1. **Read CR document** - Requirements and scope already defined
+2. **Verify specs from CR** - CR should have suggested specs
+3. **Check completeness** - Ensure all requirements have specs
+4. **Generate any missing specs** - Fill gaps
+5. **Update IMPLEMENTATION_PLAN.md** - Add CR section
+
+**CR specs are prefixed with `CR-`:**
+```
+.ralph-specs/
+├── 01-project-setup.md      # Original specs (if any)
+├── 02-auth.md
+├── CR-01-dark-mode.md       # Change Request specs
+├── CR-02-theme-toggle.md
+└── ...
+```
+
+→ Skip to "SPEC FILE FORMAT" section
+
+---
+
+### For PRD (Greenfield)
 
 ### Phase 1: ANALYZE PRD
 
@@ -276,9 +337,48 @@ Create `docs/IMPLEMENTATION_PLAN.md`:
 *Next step: /ralph:deploy to start building*
 ```
 
+### For Change Requests - Append to existing plan:
+
+```markdown
+---
+
+## Change Request: {Title}
+
+**Date:** {YYYY-MM-DD}
+**Scope:** {SMALL/MEDIUM/LARGE}
+**Source:** docs/CHANGE-REQUEST-{date}.md
+
+### CR Specs
+
+- [ ] CR-01-{name}.md - {description}
+- [ ] CR-02-{name}.md - {description}
+- **HARD STOP** - Verify all CR changes + regression
+
+### CR Dependencies
+
+```
+CR-01 → CR-02 → CR-03
+```
+
+### CR Traceability
+
+| CR Requirement | Spec | Status |
+|----------------|------|--------|
+| {Requirement 1} | CR-01 | pending |
+| {Requirement 2} | CR-02 | pending |
+
+### Regression Checklist
+
+- [ ] {Existing feature 1} still works
+- [ ] {Existing feature 2} still works
+- [ ] All original E2E tests pass
+```
+
 ---
 
 ## DEFINITION OF DONE - Planning
+
+### For PRD (Greenfield)
 
 | Kriterium | Verifiering |
 |-----------|-------------|
@@ -290,10 +390,23 @@ Create `docs/IMPLEMENTATION_PLAN.md`:
 | ✅ Specs är minimala | Max 20 rader |
 | ✅ Inga open questions | Allt är specificerat |
 
+### For Change Request (Brownfield)
+
+| Kriterium | Verifiering |
+|-----------|-------------|
+| ✅ Alla CR requirements täckta | Traceability komplett |
+| ✅ Specs är atomära | En sak per spec |
+| ✅ Dependencies explicit | CR-ordning tydlig |
+| ✅ E2E test för varje spec | Testability klar |
+| ✅ Regression tests inkluderade | Existerande funktionalitet verifieras |
+| ✅ Files to modify listade | Vet vilka filer som påverkas |
+| ✅ Specs är minimala | Max 20 rader |
+
 ---
 
 ## NÄR KLAR
 
+### For PRD (Greenfield)
 ```
 PLANNING_COMPLETE
 
@@ -314,13 +427,38 @@ Next steps:
 3. Run /ralph:deploy to push to VM and start building
 ```
 
+### For Change Request (Brownfield)
+```
+PLANNING_COMPLETE (Change Request)
+
+Source: docs/CHANGE-REQUEST-{date}.md
+Scope: {SMALL/MEDIUM/LARGE}
+
+Created:
+- Updated docs/IMPLEMENTATION_PLAN.md (CR section)
+- .ralph-specs/CR-01-{name}.md
+- .ralph-specs/CR-02-{name}.md
+- ... ({total} CR specs)
+
+Summary:
+- CR Specs: {total}
+- Files affected: {N}
+- Regression tests: {N}
+
+Next steps:
+1. Review specs in .ralph-specs/CR-*.md
+2. Run /ralph:preflight to verify requirements
+3. Run /ralph:deploy to push to VM and start building
+```
+
 ---
 
 ## START NOW
 
-1. Read PRD
+1. Detect input source (PRD or Change Request)
 2. Ask for mode (Autonomous/Interactive)
-3. Analyze and break down into epics
-4. Create specs with completeness loop
-5. Generate IMPLEMENTATION_PLAN.md
-6. Verify PRD coverage
+3. If PRD: Analyze and break down into epics
+4. If CR: Verify specs cover all requirements
+5. Create specs with completeness loop
+6. Generate/update IMPLEMENTATION_PLAN.md
+7. Verify coverage (PRD or CR requirements)
