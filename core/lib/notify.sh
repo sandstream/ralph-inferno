@@ -2,7 +2,12 @@
 # notify.sh - Notifications via ntfy with epic tracking
 # Source this file: source lib/notify.sh
 
+# Load NTFY_TOPIC from config if not set
+if [ -z "${NTFY_TOPIC:-}" ] && [ -f ".ralph/config.json" ]; then
+    NTFY_TOPIC=$(grep -o '"ntfy_topic"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)
+fi
 NTFY_TOPIC="${NTFY_TOPIC:-}"
+
 CURRENT_EPIC=""
 CURRENT_EPIC_NAME=""
 
