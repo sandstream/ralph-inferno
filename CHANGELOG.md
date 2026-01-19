@@ -2,6 +2,15 @@
 
 All notable changes to Ralph Inferno will be documented in this file.
 
+## [1.0.10] - 2026-01-19
+
+### Added
+- **AWS Bedrock support**: Full documentation for Bedrock authentication
+- **Azure AI Foundry support**: Full documentation for Foundry authentication
+- New **Authentication** section in README with all 4 auth methods
+- Auth method options table in config documentation
+- Updated `vm-init.sh` with all auth examples
+
 ## [1.0.9] - 2026-01-19
 
 ### Added
