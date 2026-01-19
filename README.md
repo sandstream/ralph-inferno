@@ -59,7 +59,7 @@ Local Machine                      VM (Sandbox)
 | SSH access | Yes | You need to be able to SSH into the VM |
 | Git | Yes | Usually pre-installed |
 | Claude Code | Yes | `npm install -g @anthropic-ai/claude-code` |
-| Claude auth | Yes | Run `claude login` OR set `ANTHROPIC_API_KEY` |
+| Claude auth | Yes | See [Authentication](#authentication) below |
 | GitHub CLI | Yes | `brew install gh` then `gh auth login` |
 
 **Important:** Both machines need `gh auth login` for Git operations to work!
@@ -95,10 +95,8 @@ sudo apt-get install -y nodejs
 # Install Claude Code
 npm install -g @anthropic-ai/claude-code
 
-# Authenticate Claude (choose one):
-claude login                    # If you have Claude Pro/Max subscription
-# OR
-export ANTHROPIC_API_KEY="sk-ant-..."  # If using API key
+# Authenticate Claude - see Authentication section below
+claude login                    # Simplest option for Pro/Max subscribers
 
 # Install and authenticate GitHub CLI
 sudo apt-get install gh
@@ -121,6 +119,39 @@ Type `/ralph:` and you should see the available commands:
 - `/ralph:plan`
 - `/ralph:deploy`
 - etc.
+
+## Authentication
+
+Claude Code supports multiple authentication methods. Set these on your **VM** (not local machine):
+
+### Option 1: Claude Subscription (Simplest)
+```bash
+claude login
+```
+
+### Option 2: Anthropic API Key
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+```
+
+### Option 3: AWS Bedrock
+```bash
+export CLAUDE_CODE_USE_BEDROCK=1
+export ANTHROPIC_MODEL="us.anthropic.claude-sonnet-4-20250514-v1:0"
+export AWS_REGION="us-east-1"
+export AWS_ACCESS_KEY_ID="..."
+export AWS_SECRET_ACCESS_KEY="..."
+```
+
+### Option 4: Azure AI Foundry
+```bash
+export CLAUDE_CODE_USE_FOUNDRY=1
+export ANTHROPIC_FOUNDRY_BASE_URL="https://your-resource.services.ai.azure.com/api/v1"
+export ANTHROPIC_FOUNDRY_API_KEY="..."
+export ANTHROPIC_FOUNDRY_RESOURCE="your-resource-name"
+```
+
+> **Tip:** Add these to `~/.bashrc` on your VM so they persist across sessions.
 
 ## Update
 
@@ -275,7 +306,7 @@ Configuration is stored in `.ralph/config.json`:
 
 ```json
 {
-  "version": "1.0.6",
+  "version": "1.0.9",
   "language": "en",
   "provider": "hcloud",
   "vm_name": "ralph-sandbox",
@@ -294,6 +325,14 @@ Configuration is stored in `.ralph/config.json`:
   "test_cmd": "npm test"
 }
 ```
+
+**Auth method options:**
+| Value | Description |
+|-------|-------------|
+| `subscription` | Uses `claude login` (Pro/Max subscription) |
+| `api_key` | Uses `ANTHROPIC_API_KEY` env var |
+| `bedrock` | Uses AWS Bedrock env vars |
+| `foundry` | Uses Azure AI Foundry env vars |
 
 ## Documentation
 
