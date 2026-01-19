@@ -6,9 +6,23 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -z "${SELFHEAL_LOADED:-}" ] && source "$SCRIPT_DIR/selfheal.sh"
 
+# Load config utilities if available
+if [ -f "$SCRIPT_DIR/config-utils.sh" ]; then
+    source "$SCRIPT_DIR/config-utils.sh"
+    CONFIG_UTILS_LOADED=true
+else
+    CONFIG_UTILS_LOADED=false
+fi
+
 # Detect build command based on project type
 detect_build_cmd() {
-    # Check for custom config first
+    # Use config-utils if available
+    if [ "$CONFIG_UTILS_LOADED" = true ]; then
+        get_build_cmd
+        return
+    fi
+
+    # Fallback: Check for custom config first
     if [ -f ".ralph/config.json" ]; then
         local custom_cmd
         custom_cmd=$(grep -o '"build_cmd"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)
@@ -33,7 +47,13 @@ detect_build_cmd() {
 
 # Detect test command based on project type
 detect_test_cmd() {
-    # Check for custom config first
+    # Use config-utils if available
+    if [ "$CONFIG_UTILS_LOADED" = true ]; then
+        get_test_cmd
+        return
+    fi
+
+    # Fallback: Check for custom config first
     if [ -f ".ralph/config.json" ]; then
         local custom_cmd
         custom_cmd=$(grep -o '"test_cmd"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)

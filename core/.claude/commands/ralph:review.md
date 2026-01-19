@@ -8,63 +8,80 @@ Check if Ralph is done and review the results.
 /ralph:review --tunnel   # Also open SSH tunnel for testing
 ```
 
+## Language Setting
+
+**FIRST: Detect language automatically**
+```bash
+LANG=$(grep -o '"language"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)
+echo "Language: ${LANG:-en}"
+```
+
+Use the detected language for user-facing output.
+
 ## Instructions
 
-**STEG 1: KOLLA OM RALPH KÖR**
+**STEP 1: LOAD CONFIG**
 
 ```bash
-ssh ralph@$(cat ~/.ralph-vm | grep VM_IP | cut -d= -f2) 'pgrep -f "ralph.sh|claude" && echo "RUNNING" || echo "NOT_RUNNING"'
+VM_IP=$(grep -o '"vm_ip"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)
+VM_USER=$(grep -o '"user"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)
+VM_USER="${VM_USER:-ubuntu}"
+echo "VM: $VM_USER@$VM_IP"
 ```
 
-Om RUNNING:
-```
-⏳ Ralph kör fortfarande på VM!
-
-Följ progress:
-  ssh ralph@VM_IP 'tail -f ~/projects/REPO/ralph-deploy.log'
-
-Kom tillbaka när Ralph är klar.
-```
-STOPPA HÄR - ge inte fler alternativ.
-
-Om NOT_RUNNING → fortsätt till steg 2.
-
-**STEG 2: KOLLA RESULTAT**
+**STEP 2: CHECK IF RALPH IS RUNNING**
 
 ```bash
-# Hämta senaste från VM
-source ~/.ralph-vm
+ssh $VM_USER@$VM_IP 'pgrep -f "ralph.sh|claude" && echo "RUNNING" || echo "NOT_RUNNING"'
+```
+
+If RUNNING:
+```
+Ralph is still running on VM!
+
+Follow progress:
+  ssh VM_USER@VM_IP 'tail -f ~/projects/REPO/ralph-deploy.log'
+
+Come back when Ralph is done.
+```
+STOP HERE - don't give more options.
+
+If NOT_RUNNING -> continue to step 3.
+
+**STEP 3: CHECK RESULTS**
+
+```bash
 ssh $VM_USER@$VM_IP "cd ~/projects/$(basename $(git remote get-url origin) .git) && git log --oneline -10"
 ```
 
-Visa:
-- Antal commits Ralph gjorde
-- Vilka specs som kördes
+Show:
+- Number of commits Ralph made
+- Which specs were run
 
-**STEG 3: PULL CHANGES**
+**STEP 4: PULL CHANGES**
 
 ```bash
 git pull origin main
 ```
 
-**STEG 4: LISTA PRs (om några)**
+**STEP 5: LIST PRs (if any)**
 
 ```bash
 gh pr list
 ```
 
-**STEG 5: ÖPPNA TUNNEL (om --tunnel)**
+**STEP 6: OPEN TUNNEL (if --tunnel)**
 
 ```bash
-# Öppna SSH tunnel för att testa appen
+# Open SSH tunnel to test the app
 ssh -L 5173:localhost:5173 -L 54321:localhost:54321 $VM_USER@$VM_IP
 ```
 
-Visa:
+Show:
 ```
-🔗 Tunnlar öppna!
+Tunnels open!
 - App: http://localhost:5173
 - Supabase: http://localhost:54321
 
-Tryck Ctrl+C för att stänga tunnlarna.
+Press Ctrl+C to close tunnels.
 ```

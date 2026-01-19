@@ -14,12 +14,13 @@ Document bugs and issues found during testing, generate new specs for Ralph to f
 
 ## Language Setting
 
-**FIRST: Check language setting**
+**FIRST: Detect language automatically**
 ```bash
-cat .ralph/config.json | grep language
+LANG=$(grep -o '"language"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)
+echo "Language: ${LANG:-en}"
 ```
 
-Use the configured language for ALL output (CR docs, specs, user prompts).
+Use the detected language (default: English) for ALL output (CR docs, specs, user prompts).
 
 ## Output
 - `docs/CHANGE_REQUEST.md` - Problem documentation

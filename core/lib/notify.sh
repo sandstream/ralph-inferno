@@ -2,9 +2,18 @@
 # notify.sh - Notifications via ntfy with epic tracking
 # Source this file: source lib/notify.sh
 
-# Load NTFY_TOPIC from config if not set
-if [ -z "${NTFY_TOPIC:-}" ] && [ -f ".ralph/config.json" ]; then
-    NTFY_TOPIC=$(grep -o '"ntfy_topic"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)
+# Load config utilities if available
+SCRIPT_DIR_NOTIFY="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR_NOTIFY/config-utils.sh" ]; then
+    source "$SCRIPT_DIR_NOTIFY/config-utils.sh"
+    NTFY_TOPIC="${NTFY_TOPIC:-$(get_ntfy_topic)}"
+    NTFY_ENABLED="${NTFY_ENABLED:-$(is_ntfy_enabled && echo "true" || echo "false")}"
+else
+    # Fallback: Load directly from config
+    if [ -z "${NTFY_TOPIC:-}" ] && [ -f ".ralph/config.json" ]; then
+        NTFY_TOPIC=$(grep -o '"ntfy_topic"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)
+    fi
+    NTFY_ENABLED="${NTFY_ENABLED:-true}"
 fi
 NTFY_TOPIC="${NTFY_TOPIC:-}"
 
@@ -16,6 +25,8 @@ notify() {
     local msg="$1"
     local priority="${2:-default}"
 
+    # Check if notifications are enabled
+    [ "$NTFY_ENABLED" = "false" ] && return 0
     [ -z "$NTFY_TOPIC" ] && return 0
 
     curl -s \

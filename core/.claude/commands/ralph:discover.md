@@ -11,15 +11,18 @@ Start an interactive discovery session to create a PRD and set up the project.
 
 ## LANGUAGE SETTING
 
-**FIRST: Check language setting**
+**FIRST: Detect language automatically**
 ```bash
-cat .ralph/config.json | grep language
+LANG=$(grep -o '"language"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)
+echo "Language: ${LANG:-en}"
 ```
 
-Use the configured language for ALL output (PRD, questions, comments).
-- `"language": "en"` → Write everything in English
-- `"language": "sv"` → Write everything in Swedish
+Use the detected language (default: English) for ALL output (PRD, questions, comments).
+- `en` → Write everything in English
+- `sv` → Write everything in Swedish
 - etc.
+
+**IMPORTANT:** This includes specs, documentation, and user-facing text.
 
 ## CRITICAL INSTRUCTIONS
 

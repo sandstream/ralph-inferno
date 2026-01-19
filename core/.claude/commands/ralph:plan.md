@@ -16,12 +16,18 @@ Analyze PRD and create implementation plan with executable specs.
 
 ## Instructions
 
-**FIRST: Check language setting**
+**FIRST: Detect language automatically**
 ```bash
-cat .ralph/config.json | grep language
+LANG=$(grep -o '"language"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)
+echo "Language: ${LANG:-en}"
 ```
 
-Use the configured language for ALL output (specs, plans, comments). If `"language": "en"` write in English. If `"language": "sv"` write in Swedish. Etc.
+Use the detected language (default: English) for ALL output (specs, plans, comments).
+- `en` → Write in English
+- `sv` → Write in Swedish
+- etc.
+
+**IMPORTANT:** Specs must be in the configured language!
 
 Read `docs/prd.md` and create an implementation plan.
 
