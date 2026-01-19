@@ -1,6 +1,22 @@
 # Ralph Inferno - Backlog
 
-## Framtida features och idéer
+## Potentiella utökningar
+
+---
+
+### Runtime Discovery Loop
+
+**Problem:** Ralph kan upptäcka saker under implementation som borde påverka scope.
+
+**Idé:** Graduated response baserat på impact:
+
+| Impact | Exempel | Åtgärd |
+|--------|---------|--------|
+| **Liten** | Edge case, minor refactor | Expand in-place, fortsätt |
+| **Medium** | Nytt API-anrop, extra komponent | Skapa follow-up spec (`02a-discovery.md`) |
+| **Stor** | Arkitekturändring, nytt beroende | Pause & notify användaren |
+
+**Alltid:** Logga discoveries till `DISCOVERIES.md`
 
 ---
 
@@ -22,60 +38,9 @@ issues/ = Dynamiskt, Ralph skapar vid behov
 
 ---
 
-### Confidence-based autonomy
+### Blind Validation
 
-**Problem:** Ralph frågar för mycket ELLER för lite. Behöver smart balans.
-
-**Lösning:** Ralph researchar "best practices" och tar beslut baserat på confidence.
-
-```
-HÖG CONFIDENCE (>80%)           LÅG CONFIDENCE (<80%)
-─────────────────────           ─────────────────────
-• Klarna i svensk checkout     • Ny experimentell tech
-• Apple Login i iOS-app        • Ovanlig arkitektur
-• Tailwind för styling         • Dyr integration
-
-→ Kör direkt                   → Skapa CR, fråga
-```
-
-**Exempel på Ralph's resonemang:**
-```
-"PRD säger 'checkout med betalning' men specificerar inte metod.
-
-Research:
-- Klarna: 95% av svenska e-handel → STANDARD
-- Swish: 80% → STANDARD
-- Crypto: 5% → NICHE
-
-Decision: Implementerar Klarna + Swish (standard)
-          Skippar crypto (skapar CR om det behövs)"
-```
-
-**Fördelar:**
-- Ralph beter sig som en junior dev med research-skills
-- Frågar inte om självklarheter (TypeScript, Tailwind)
-- Frågar om ovanliga/dyra/kontroversiella val
-
----
-
-### Trädgårds-metaforen
-
-```
-PRD.md = Trädgårdsplanen ("tomater här, gurkor där")
-specs/ = Fröna vi sår
-issues/ = Vad som faktiskt växer
-
-Guardrails = PRD - vi VET vad vi vill bygga
-Flexibilitet = HOW - Ralph löser vägen dit
-```
-
----
-
----
-
-### Blind Validation (från Zeroshot)
-
-**Problem:** När samma agent implementerar och validerar får vi confirmation bias - den "ser" att koden borde fungera.
+**Problem:** När samma agent implementerar och validerar får vi confirmation bias.
 
 **Lösning:** Separat validator-agent som INTE ser implementation-context.
 
@@ -87,16 +52,6 @@ Blind Validator Agent: Granskar KOD ENDAST
 "Koden har bug på rad 45" (ärlig feedback)
 ```
 
-**Implementation:**
-```bash
-# Efter implementation
-claude --dangerously-skip-permissions -p "
-  Review this code for bugs. You have NOT seen the spec.
-  Only review the code itself.
-  $(cat src/checkout.ts)
-"
-```
-
 **Fördelar:**
 - Hittar fler buggar
 - Ingen "jag vet vad jag menade" bias
@@ -104,7 +59,7 @@ claude --dangerously-skip-permissions -p "
 
 ---
 
-### SQLite för state (från Zeroshot)
+### SQLite för state
 
 **Problem:** Checksum-filer och loggar är fragila. Svårt att query:a historik.
 
@@ -122,26 +77,16 @@ CREATE TABLE specs (
   completed_at TIMESTAMP,
   error_log TEXT
 );
-
-CREATE TABLE issues (
-  id TEXT PRIMARY KEY,
-  spec_id TEXT,
-  type TEXT,  -- bug, feature, scope_change
-  confidence REAL,
-  auto_approved BOOLEAN,
-  created_at TIMESTAMP
-);
 ```
 
 **Fördelar:**
 - Crash recovery (resume från exakt punkt)
 - Cost tracking per spec
 - Query historik ("vilka specs failar mest?")
-- Bättre `/ralph:status`
 
 ---
 
-### Complexity Classification (från Zeroshot)
+### Complexity Classification
 
 **Problem:** Ralph kör alla specs likadant, oavsett komplexitet.
 
@@ -152,25 +97,6 @@ SIMPLE (< 100 tokens)     → Snabb, ingen validation
 MEDIUM (100-500 tokens)   → Standard flow
 COMPLEX (> 500 tokens)    → Extra validation, mer retries
 RISKY (ändrar auth/db)    → Blind validation + manuell review
-```
-
-**Implementation:**
-```bash
-classify_spec() {
-  local tokens=$(estimate_tokens "$1")
-  local has_auth=$(grep -c "auth\|login\|password" "$1")
-  local has_db=$(grep -c "database\|migration\|schema" "$1")
-
-  if [ $has_auth -gt 0 ] || [ $has_db -gt 0 ]; then
-    echo "RISKY"
-  elif [ $tokens -gt 500 ]; then
-    echo "COMPLEX"
-  elif [ $tokens -gt 100 ]; then
-    echo "MEDIUM"
-  else
-    echo "SIMPLE"
-  fi
-}
 ```
 
 ---
@@ -200,24 +126,87 @@ classify_spec() {
 - Vad är "build pass" för musik? (API returnerar audio?)
 - Hur verifierar vi kvalitet på kreativt innehåll?
 
-**Möjlig approach:**
-- Varje modul har egen `templates/`, `verify.sh`, `test-loop.sh`
-- Brainstorm-tekniker kan vara samma (5 Whys funkar för allt)
-- Deploy/test blir helt annorlunda per modul
+---
+
+### Design System Validation
+
+**Problem:** Inferno mode har design review men det är basic.
+
+**Idé:** Integrera med design system för automatisk validering.
+
+- Läs design tokens från Figma/Storybook
+- Verifiera att implementation matchar
+- Screenshot diff mot design mockups
+
+---
+
+### Multi-VM Parallel Execution
+
+**Problem:** En VM = en spec i taget. Långsamt för stora projekt.
+
+**Idé:** Spinn upp flera VMs och kör oberoende specs parallellt.
+
+```
+VM-1: 01-setup.md → 02-auth.md
+VM-2: 03-feature-a.md (efter setup klar)
+VM-3: 04-feature-b.md (efter setup klar)
+```
+
+**Kräver:** Dependency graph, merge strategy, conflict resolution.
+
+---
+
+### Cost Budgets & Alerts
+
+**Problem:** Ralph kan bränna tokens utan kontroll.
+
+**Idé:** Sätt budget per session/spec.
+
+```json
+{
+  "cost_budget": {
+    "per_spec_max_usd": 5.00,
+    "session_max_usd": 50.00,
+    "alert_at_percent": 80
+  }
+}
+```
+
+**Vid budget hit:** Pause, notify, vänta på godkännande.
+
+---
+
+### Git Branch Strategy
+
+**Problem:** Allt går till main/current branch.
+
+**Idé:** Feature branches per epic/CR.
+
+```
+main
+├── ralph/epic-1-auth
+├── ralph/epic-2-todos
+└── ralph/cr-dark-mode
+```
+
+**Auto-PR:** När epic klar → skapa PR för review.
 
 ---
 
 ## Prioritering
 
-| Feature | Värde | Komplexitet | Status |
-|---------|-------|-------------|--------|
-| Issue-baserad modell | Högt | Medel | Backlog |
-| Confidence-based autonomy | Högt | Hög | Backlog |
-| PRD-validering för issues | Medel | Låg | Backlog |
-| Blind validation | Högt | Låg | Backlog |
-| SQLite state | Medel | Medel | Backlog |
-| Complexity classification | Medel | Låg | Backlog |
-| **Domain modules** | Högt | Hög | Backlog |
+| Feature | Värde | Komplexitet | Notering |
+|---------|-------|-------------|----------|
+| Runtime discovery loop | Högt | Medel | Bygger på befintlig CR-logik |
+| Blind validation | Högt | Låg | Enkel att implementera |
+| SQLite state | Medel | Medel | Bra för debugging |
+| Complexity classification | Medel | Låg | Quick win |
+| Domain modules | Högt | Hög | Stor omskrivning |
+| Design system validation | Medel | Hög | Kräver integrationer |
+| Multi-VM parallel | Högt | Hög | Komplex orchestration |
+| Cost budgets | Medel | Låg | Quick win |
+| Git branch strategy | Medel | Medel | Nice to have |
+| Issue-baserad modell | Högt | Medel | Fundamental ändring |
 
 ---
 
@@ -225,6 +214,7 @@ classify_spec() {
 
 - [Gas Town](https://github.com/steveyegge/gastown) - Multi-agent orchestration, git worktree persistence
 - [Zeroshot](https://github.com/covibes/zeroshot) - Blind validation, SQLite state, complexity classification
+- [BMAD Method](https://github.com/bmadcode/BMAD-METHOD) - Brainstorm/Analyst personas
 
 ---
 
