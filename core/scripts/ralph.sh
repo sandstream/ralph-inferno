@@ -4,10 +4,10 @@
 #
 # Usage:
 #   ./ralph.sh                    # Clean loop (default)
+#   ./ralph.sh --orchestrate      # Middle loop with E2E + auto-CR
 #   ./ralph.sh --parallel         # Parallel with worktrees
-#   ./ralph.sh --watch            # Fireplace dashboard
 #   ./ralph.sh --status           # Show status
-#   ./ralph.sh --full             # Legacy full mode
+#   ./ralph.sh --cost             # Show cost estimate
 #   ./ralph.sh --help             # Help
 #
 # Clean loop: ~150 lines, follows Ryan Carson / Geoffrey Huntley approach
@@ -22,19 +22,6 @@ LIB_DIR="$(dirname "$SCRIPT_DIR")/lib"
 if [[ "${1:-}" == "--orchestrate" ]] || [[ "${1:-}" == "-o" ]]; then
     shift
     exec "$SCRIPT_DIR/orchestrator.sh" "$@"
-fi
-
-# Check for --full flag (legacy)
-if [[ "${1:-}" == "--full" ]]; then
-    shift
-    exec "$SCRIPT_DIR/ralph-full.sh" "$@"
-fi
-
-# Check for --watch
-if [[ "${1:-}" == "--watch" ]] || [[ "${1:-}" == "-w" ]]; then
-    source "$LIB_DIR/watch.sh"
-    show_watch
-    exit 0
 fi
 
 # Check for --status
