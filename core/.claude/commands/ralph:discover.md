@@ -31,6 +31,25 @@ If user types something other than a number, ask them to reply with just the num
 
 ---
 
+## STEP 0: Language selection
+
+```
+Which language for PRD and specs?
+
+1) English (Recommended)
+2) Swedish (Svenska)
+3) Spanish (Español)
+4) Other
+
+Reply with number:
+```
+
+If "Other" was selected, ask: "Which language?"
+
+Save the language choice and use it for all generated documents (PRD, specs, CLAUDE.md).
+
+---
+
 ## STEP 1: Project type
 
 ```

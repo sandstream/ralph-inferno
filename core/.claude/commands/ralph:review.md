@@ -10,61 +10,61 @@ Check if Ralph is done and review the results.
 
 ## Instructions
 
-**STEG 1: KOLLA OM RALPH KÖR**
+**STEP 1: CHECK IF RALPH IS RUNNING**
 
 ```bash
 ssh ralph@$(cat ~/.ralph-vm | grep VM_IP | cut -d= -f2) 'pgrep -f "ralph.sh|claude" && echo "RUNNING" || echo "NOT_RUNNING"'
 ```
 
-Om RUNNING:
+If RUNNING:
 ```
-⏳ Ralph kör fortfarande på VM!
+⏳ Ralph is still running on VM!
 
-Följ progress:
+Follow progress:
   ssh ralph@VM_IP 'tail -f ~/projects/REPO/ralph-deploy.log'
 
-Kom tillbaka när Ralph är klar.
+Come back when Ralph is done.
 ```
-STOPPA HÄR - ge inte fler alternativ.
+STOP HERE - don't give more options.
 
-Om NOT_RUNNING → fortsätt till steg 2.
+If NOT_RUNNING → continue to step 2.
 
-**STEG 2: KOLLA RESULTAT**
+**STEP 2: CHECK RESULTS**
 
 ```bash
-# Hämta senaste från VM
+# Get latest from VM
 source ~/.ralph-vm
 ssh $VM_USER@$VM_IP "cd ~/projects/$(basename $(git remote get-url origin) .git) && git log --oneline -10"
 ```
 
-Visa:
-- Antal commits Ralph gjorde
-- Vilka specs som kördes
+Show:
+- Number of commits Ralph made
+- Which specs were run
 
-**STEG 3: PULL CHANGES**
+**STEP 3: PULL CHANGES**
 
 ```bash
 git pull origin main
 ```
 
-**STEG 4: LISTA PRs (om några)**
+**STEP 4: LIST PRs (if any)**
 
 ```bash
 gh pr list
 ```
 
-**STEG 5: ÖPPNA TUNNEL (om --tunnel)**
+**STEP 5: OPEN TUNNEL (if --tunnel)**
 
 ```bash
-# Öppna SSH tunnel för att testa appen
+# Open SSH tunnel to test the app
 ssh -L 5173:localhost:5173 -L 54321:localhost:54321 $VM_USER@$VM_IP
 ```
 
-Visa:
+Show:
 ```
-🔗 Tunnlar öppna!
+🔗 Tunnels open!
 - App: http://localhost:5173
 - Supabase: http://localhost:54321
 
-Tryck Ctrl+C för att stänga tunnlarna.
+Press Ctrl+C to close the tunnels.
 ```

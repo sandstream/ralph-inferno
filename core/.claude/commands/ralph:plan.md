@@ -11,58 +11,58 @@ Analyze PRD and create implementation plan with executable specs.
 - `docs/prd.md` must exist (run `/ralph:discover` first)
 
 ## Output
-- `docs/IMPLEMENTATION_PLAN.md` - Översikt med epics och tasks
-- `specs/*.md` - Körbara spec-filer för varje task (detta kör Ralph på VM)
+- `docs/IMPLEMENTATION_PLAN.md` - Overview with epics and tasks
+- `specs/*.md` - Executable spec files for each task (this is what Ralph runs on VM)
 
 ## Instructions
 
-Läs `docs/prd.md` och skapa en implementation plan.
+Read `docs/prd.md` and create an implementation plan.
 
-**FAS 1: ANALYSERA PRD**
-1. Läs `docs/prd.md` noggrant
-2. Identifiera alla features och krav
-3. Gruppera till logiska epics
+**PHASE 1: ANALYZE PRD**
+1. Read `docs/prd.md` carefully
+2. Identify all features and requirements
+3. Group into logical epics
 
-**FAS 2: SKAPA IMPLEMENTATION_PLAN.md**
+**PHASE 2: CREATE IMPLEMENTATION_PLAN.md**
 
-Skapa filen med denna struktur:
+Create the file with this structure:
 
 ```markdown
 # IMPLEMENTATION_PLAN.md
 
 ## Epics Overview
 
-| Epic | Namn | Status |
+| Epic | Name | Status |
 |------|------|--------|
-| E1 | {namn} | pending |
-| E2 | {namn} | pending |
+| E1 | {name} | pending |
+| E2 | {name} | pending |
 
 ## Tasks
 
-### Kritisk (E1: {epic-namn})
-- [ ] T1: {Specifik task}
+### Critical (E1: {epic-name})
+- [ ] T1: {Specific task}
 - [ ] T2: {Task}
-- [ ] **HARD STOP** - Verifiera grundflöde fungerar
+- [ ] **HARD STOP** - Verify basic flow works
 
-### Hög (E2: {epic-namn})
+### High (E2: {epic-name})
 - [ ] T3: {Task}
 - [ ] T4: {Task}
 
-### Låg
+### Low
 - [ ] T5: {Task}
 
 ---
 
 ## Progress
 
-| Datum | Task | Resultat |
-|-------|------|----------|
+| Date | Task | Result |
+|------|------|--------|
 
 ---
 
 ## Learnings
 
-| Problem | Lärdom |
+| Problem | Lesson |
 |---------|--------|
 
 ---
@@ -70,98 +70,98 @@ Skapa filen med denna struktur:
 ## Blocked
 ```
 
-**FAS 3: SKAPA SPEC-FILER (OBLIGATORISKT)**
+**PHASE 3: CREATE SPEC FILES (MANDATORY)**
 
-Skapa ALLTID körbara spec-filer i `specs/`. Detta är vad Ralph kör på VM.
+ALWAYS create executable spec files in `specs/`. This is what Ralph runs on VM.
 
-> **Templates:** Se `templates/SPEC-template.md` och `templates/specs/01-project-setup.md`
+> **Templates:** See `templates/SPEC-template.md` and `templates/specs/01-project-setup.md`
 
 ```
 specs/
-├── 01-project-setup.md   ← MÅSTE inkludera Playwright!
+├── 01-project-setup.md   ← MUST include Playwright!
 ├── 02-database-schema.md
 ├── 03-auth-context.md
 ├── 04-login-page.md
 └── ...
 ```
 
-**KRITISKT - 01-project-setup MÅSTE innehålla:**
+**CRITICAL - 01-project-setup MUST contain:**
 - Vite + React + TypeScript setup
-- Tailwind med design tokens från PRD
+- Tailwind with design tokens from PRD
 - **Playwright installation** (`npx playwright install`)
 - `playwright.config.ts`
 - `e2e/smoke.spec.ts`
 
-> ⚠️ Utan Playwright fungerar inte Ralph's test-loop!
+> ⚠️ Without Playwright, Ralph's test-loop won't work!
 
-**Spec-fil format (MINIMALT för liten context window):**
+**Spec file format (MINIMAL for small context window):**
 ```markdown
-# {Task-namn}
+# {Task-name}
 
-{1-2 meningar vad som ska byggas}
+{1-2 sentences about what to build}
 
-## Krav
-- {Konkret krav 1}
-- {Konkret krav 2}
+## Requirements
+- {Concrete requirement 1}
+- {Concrete requirement 2}
 
 ## E2E Test
-Skriv test i `e2e/{feature}.spec.ts` som verifierar:
-- {vad testet ska kolla}
+Write test in `e2e/{feature}.spec.ts` that verifies:
+- {what the test should check}
 
-## Klart när
-- [ ] `npm run build` passerar
-- [ ] E2E-test passerar
-- [ ] {Specifik verifiering}
+## Done when
+- [ ] `npm run build` passes
+- [ ] E2E test passes
+- [ ] {Specific verification}
 ```
 
-**VIKTIGT - HÅLL SPECS MINIMALA:**
-- MAX 20 rader per spec
-- Ingen bakgrund/kontext - Claude läser koden
-- Inga implementation-detaljer - Claude vet hur
-- Bara VAD, inte HUR
-- En spec = en fokuserad uppgift
+**IMPORTANT - KEEP SPECS MINIMAL:**
+- MAX 20 lines per spec
+- No background/context - Claude reads the code
+- No implementation details - Claude knows how
+- Only WHAT, not HOW
+- One spec = one focused task
 
-**EXEMPEL PÅ BRA SPEC:**
+**EXAMPLE OF GOOD SPEC:**
 ```markdown
 # Auth Context
 
-Skapa React context för autentisering med Supabase.
+Create React context for authentication with Supabase.
 
-## Krav
-- AuthProvider wrappare
+## Requirements
+- AuthProvider wrapper
 - useAuth hook (user, signIn, signOut)
-- Automatisk session-refresh
+- Automatic session refresh
 
-## Klart när
-- [ ] `npm run build` passerar
-- [ ] Kan logga in/ut via hook
+## Done when
+- [ ] `npm run build` passes
+- [ ] Can log in/out via hook
 ```
 
-**EXEMPEL PÅ DÅLIG SPEC (för lång):**
+**EXAMPLE OF BAD SPEC (too long):**
 ```markdown
 # Auth Context
 
-## Bakgrund
-Autentisering är viktigt för...
-[10 rader kontext]
+## Background
+Authentication is important for...
+[10 lines of context]
 
 ## Implementation
-1. Skapa src/contexts/AuthContext.tsx
-2. Importera createContext från react
+1. Create src/contexts/AuthContext.tsx
+2. Import createContext from react
 3. ...
-[20 rader implementation-detaljer]
+[20 lines of implementation details]
 ```
 
-**REGLER:**
-- En task = en mening utan "och"
-- HARD STOP mellan prioritetsnivåer
-- Kritiska blockerare först
-- Tasks grupperade under sin epic
+**RULES:**
+- One task = one sentence without "and"
+- HARD STOP between priority levels
+- Critical blockers first
+- Tasks grouped under their epic
 
-**NÄR KLAR:**
-Skriv:
+**WHEN DONE:**
+Write:
 ```
 PLANNING_DONE
 
-Nästa: Kör /ralph:deploy för att skicka till VM och starta bygget
+Next: Run /ralph:deploy to send to VM and start the build
 ```

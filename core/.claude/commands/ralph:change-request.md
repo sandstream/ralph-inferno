@@ -13,80 +13,80 @@ Document bugs and issues found during testing, generate new specs for Ralph to f
 - Issues/bugs have been identified
 
 ## Output
-- `docs/CHANGE_REQUEST.md` - Dokumentation av problem
-- `specs/CR-*.md` - Nya spec-filer för fixes
+- `docs/CHANGE_REQUEST.md` - Documentation of problems
+- `specs/CR-*.md` - New spec files for fixes
 
 ## Instructions
 
-**FAS 1: SAMLA IN PROBLEM**
+**PHASE 1: COLLECT PROBLEMS**
 
-Fråga användaren:
+Ask the user:
 ```
 🔍 Change Request
 
-Beskriv problemen du hittade under testning:
-1. Vad fungerade inte som förväntat?
-2. Vilka features saknas eller är ofullständiga?
-3. Några UI/UX-problem?
+Describe the problems you found during testing:
+1. What didn't work as expected?
+2. Which features are missing or incomplete?
+3. Any UI/UX issues?
 
-Klistra in dina observationer:
+Paste your observations:
 ```
 
-Vänta på användarens input.
+Wait for user input.
 
-**FAS 2: KATEGORISERA PROBLEM**
+**PHASE 2: CATEGORIZE PROBLEMS**
 
-Analysera input och kategorisera:
+Analyze input and categorize:
 
-1. **BUGS** - Saker som är trasiga/fel
-2. **INCOMPLETE** - Påbörjat men inte klart
-3. **MISSING** - Saknas helt trots att det var i spec
-4. **ENHANCEMENT** - Förbättringar utöver original-spec
+1. **BUGS** - Things that are broken/wrong
+2. **INCOMPLETE** - Started but not finished
+3. **MISSING** - Completely missing despite being in spec
+4. **ENHANCEMENT** - Improvements beyond original spec
 
-**FAS 3: SKAPA CHANGE_REQUEST.md**
+**PHASE 3: CREATE CHANGE_REQUEST.md**
 
-Skapa `docs/CHANGE_REQUEST.md`:
+Create `docs/CHANGE_REQUEST.md`:
 
 ```markdown
-# Change Request - [DATUM]
+# Change Request - [DATE]
 
-## Sammanfattning
-{1-2 meningar om vad som hittades}
+## Summary
+{1-2 sentences about what was found}
 
-## Kategorier
+## Categories
 
 ### 🐛 Bugs
-| # | Problem | Påverkar | Prioritet |
-|---|---------|----------|-----------|
-| B1 | {beskrivning} | {feature} | HIGH/MED/LOW |
+| # | Problem | Affects | Priority |
+|---|---------|---------|----------|
+| B1 | {description} | {feature} | HIGH/MED/LOW |
 
 ### ⚠️ Incomplete
-| # | Feature | Status | Saknas |
-|---|---------|--------|--------|
-| I1 | {feature} | {%} | {vad} |
+| # | Feature | Status | Missing |
+|---|---------|--------|---------|
+| I1 | {feature} | {%} | {what} |
 
 ### ❌ Missing
-| # | Feature | Spec-referens |
-|---|---------|---------------|
+| # | Feature | Spec Reference |
+|---|---------|----------------|
 | M1 | {feature} | {original-spec} |
 
 ### 💡 Enhancements (Optional)
-| # | Förslag | Värde |
-|---|---------|-------|
-| E1 | {förslag} | {värde} |
+| # | Suggestion | Value |
+|---|------------|-------|
+| E1 | {suggestion} | {value} |
 
 ---
 
-## Ursprungliga Specs
-{Lista vilka specs som kördes}
+## Original Specs
+{List which specs were run}
 
 ## Testing Done
-{Sammanfattning av testning}
+{Summary of testing}
 ```
 
-**FAS 4: GENERERA NYA SPECS**
+**PHASE 4: GENERATE NEW SPECS**
 
-Skapa nya spec-filer för varje problem:
+Create new spec files for each problem:
 
 ```
 specs/
@@ -95,52 +95,52 @@ specs/
 └── CR-03-add-{missing}.md
 ```
 
-**Spec-format för fixes:**
+**Spec format for fixes:**
 ```markdown
-# CR-XX: {Kortfattad beskrivning}
+# CR-XX: {Short description}
 
-{Problem}: {Vad som är fel}
-{Fix}: {Vad som ska göras}
+{Problem}: {What's wrong}
+{Fix}: {What should be done}
 
-## Krav
-- {Konkret krav 1}
-- {Konkret krav 2}
+## Requirements
+- {Concrete requirement 1}
+- {Concrete requirement 2}
 
-## Klart när
-- [ ] `npm run build` passerar
-- [ ] {Specifik verifiering av fix}
-- [ ] Regression: {existerande funktionalitet fungerar}
+## Done when
+- [ ] `npm run build` passes
+- [ ] {Specific verification of fix}
+- [ ] Regression: {existing functionality works}
 ```
 
-**VIKTIGT:**
-- Håll specs MINIMALA (max 15 rader)
-- En spec = ett problem
-- Inkludera regression-test i "Klart när"
-- CR-specs körs EFTER original-specs
+**IMPORTANT:**
+- Keep specs MINIMAL (max 15 lines)
+- One spec = one problem
+- Include regression test in "Done when"
+- CR-specs run AFTER original specs
 
-**FAS 5: UPPDATERA IMPLEMENTATION_PLAN.md**
+**PHASE 5: UPDATE IMPLEMENTATION_PLAN.md**
 
-Lägg till CR-tasks i `docs/IMPLEMENTATION_PLAN.md`:
+Add CR tasks to `docs/IMPLEMENTATION_PLAN.md`:
 
 ```markdown
 ## Change Request Tasks
 
-### CR-Fixes (Prioritet: Kritisk)
+### CR-Fixes (Priority: Critical)
 - [ ] CR-01: {fix}
 - [ ] CR-02: {fix}
-- [ ] **HARD STOP** - Verifiera alla CR-fixes
+- [ ] **HARD STOP** - Verify all CR-fixes
 
-### CR-Enhancements (Prioritet: Låg)
+### CR-Enhancements (Priority: Low)
 - [ ] CR-03: {enhancement}
 ```
 
-**NÄR KLAR:**
+**WHEN DONE:**
 ```
 CHANGE_REQUEST_DONE
 
-Skapade:
+Created:
 - docs/CHANGE_REQUEST.md
-- X nya specs i specs/CR-*.md
+- X new specs in specs/CR-*.md
 
-Nästa: Kör /ralph:deploy för att skicka CR-specs till VM
+Next: Run /ralph:deploy to send CR-specs to VM
 ```

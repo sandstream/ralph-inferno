@@ -1,31 +1,31 @@
-# /ralph:deploy - Deploy till VM via GitHub
+# /ralph:deploy - Deploy to VM via GitHub
 
-Pusha projekt till GitHub och starta Ralph på VM.
+Push project to GitHub and start Ralph on VM.
 
 ## Usage
 ```
 /ralph:deploy
-/ralph:deploy --overnight   # Stäng av VM när klar
-/ralph:deploy --skip-requirements  # Hoppa över requirements check
+/ralph:deploy --overnight   # Turn off VM when done
+/ralph:deploy --skip-requirements  # Skip requirements check
 ```
 
 ## Prerequisites
-- IMPLEMENTATION_PLAN.md eller specs/*.md måste finnas
-- VM måste vara konfigurerad (~/.ralph-vm)
-- GitHub repo måste finnas
+- IMPLEMENTATION_PLAN.md or specs/*.md must exist
+- VM must be configured (~/.ralph-vm)
+- GitHub repo must exist
 
 ## Instructions
 
-Du är en deployment-assistent. Kör dessa steg:
+You are a deployment assistant. Run these steps:
 
-**STEG 1: VALIDERA**
+**STEP 1: VALIDATE**
 
-Kör denna validering och STOPPA om något saknas:
+Run this validation and STOP if anything is missing:
 
 ```bash
 echo "=== PRE-DEPLOY VALIDATION ==="
 
-# 1. Specs måste finnas
+# 1. Specs must exist
 SPEC_COUNT=$(ls -1 specs/*.md 2>/dev/null | grep -v "CR-" | wc -l | tr -d ' ')
 if [ "$SPEC_COUNT" -eq 0 ]; then
     echo "❌ FATAL: No specs found in specs/"
@@ -34,13 +34,13 @@ if [ "$SPEC_COUNT" -eq 0 ]; then
 fi
 echo "✅ Found $SPEC_COUNT specs"
 
-# 2. PRD bör finnas
+# 2. PRD should exist
 if [ ! -f "docs/PRD.md" ] && [ ! -f "docs/prd.md" ]; then
     echo "⚠️  WARNING: No PRD found in docs/"
     echo "   Recommended: Run /ralph:discover first"
 fi
 
-# 3. CLAUDE.md bör finnas
+# 3. CLAUDE.md should exist
 if [ ! -f "CLAUDE.md" ]; then
     echo "⚠️  WARNING: No CLAUDE.md found"
     echo "   Ralph works better with project instructions"
@@ -67,15 +67,15 @@ echo ""
 echo "=== VALIDATION PASSED ==="
 ```
 
-Om något är ❌ FATAL → **STOPPA** och be användaren fixa det.
-Om något är ⚠️ WARNING → Fråga om de vill fortsätta ändå.
+If anything is ❌ FATAL → **STOP** and ask the user to fix it.
+If anything is ⚠️ WARNING → Ask if they want to continue anyway.
 
-**STEG 2: REQUIREMENTS CHECK (om inte --skip-requirements)**
+**STEP 2: REQUIREMENTS CHECK (unless --skip-requirements)**
 
-Kör requirements check LOKALT först (inte på VM):
+Run requirements check LOCALLY first (not on VM):
 
 ```bash
-# Hitta requirements.sh från template eller scripts
+# Find requirements.sh from template or scripts
 if [ -f ".ralph/scripts/requirements.sh" ]; then
   .ralph/scripts/requirements.sh --check
 elif [ -f ".ralph/templates/stacks/react-supabase/scripts/requirements.sh" ]; then
@@ -85,92 +85,92 @@ else
 fi
 ```
 
-Om requirements FAILAR:
-- Visa vad som saknas
-- Ge instruktioner för manuell fix (speciellt auth)
-- STOPPA deploy tills fixat
+If requirements FAIL:
+- Show what's missing
+- Give instructions for manual fix (especially auth)
+- STOP deploy until fixed
 
-Om requirements OK → fortsätt till steg 3.
+If requirements OK → continue to step 3.
 
-**STEG 3: KOLLA CLAUDE AUTH PÅ VM**
+**STEP 3: CHECK CLAUDE AUTH ON VM**
 
-Kör via SSH för att kolla om Claude är autentiserad:
+Run via SSH to check if Claude is authenticated:
 ```bash
 source ~/.ralph-vm
 ssh $VM_USER@$VM_IP "claude --version 2>/dev/null && echo 'CLAUDE_OK' || echo 'CLAUDE_MISSING'"
 ```
 
-Om `CLAUDE_MISSING` eller första gången:
+If `CLAUDE_MISSING` or first time:
 
-Läs `.ralph/config.json` för att se `claude.auth_method`:
+Read `.ralph/config.json` to see `claude.auth_method`:
 
-**Om `subscription`:**
+**If `subscription`:**
 ```
-⚠️  Claude behöver autentiseras på VM:en (första gången)
+⚠️  Claude needs to be authenticated on the VM (first time)
 
-Kör följande:
+Run the following:
   1. ssh $VM_USER@$VM_IP
   2. claude login
-  3. Följ instruktionerna i browsern
-  4. Kör /ralph:deploy igen
+  3. Follow the instructions in the browser
+  4. Run /ralph:deploy again
 
-Detta behöver bara göras en gång per VM.
+This only needs to be done once per VM.
 ```
-**STOPPA** och vänta på att användaren gör detta.
+**STOP** and wait for the user to do this.
 
-**Om `api_key`:**
+**If `api_key`:**
 ```
-⚠️  ANTHROPIC_API_KEY behöver sättas på VM:en
+⚠️  ANTHROPIC_API_KEY needs to be set on the VM
 
-Kör följande:
+Run the following:
   1. ssh $VM_USER@$VM_IP
   2. echo 'export ANTHROPIC_API_KEY="sk-ant-..."' >> ~/.bashrc
   3. source ~/.bashrc
-  4. Kör /ralph:deploy igen
+  4. Run /ralph:deploy again
 ```
-**STOPPA** och vänta på att användaren gör detta.
+**STOP** and wait for the user to do this.
 
-Om Claude redan fungerar → fortsätt till steg 4.
+If Claude already works → continue to step 4.
 
-**STEG 4: VÄLJ MODE**
+**STEP 4: SELECT MODE**
 
-Fråga användaren med AskUserQuestion:
+Ask the user with AskUserQuestion:
 
 ```
-Vilken mode vill du köra Ralph i?
+Which mode do you want to run Ralph in?
 
 1. Standard (E2E + auto-CR) - Recommended
-   Kör specs med Playwright-tester, genererar auto-fix vid fel
+   Run specs with Playwright tests, generate auto-fix on errors
 
-2. Quick (bara build)
-   Snabbaste - bara spec-körning och build verify
+2. Quick (build only)
+   Fastest - just spec execution and build verify
 
-3. Inferno (allt + parallel)
-   Full kraft - E2E, auto-CR, design review, parallel worktrees
+3. Inferno (everything + parallel)
+   Full power - E2E, auto-CR, design review, parallel worktrees
 ```
 
-Spara valet:
+Save the choice:
 - Standard → `RALPH_FLAGS="--orchestrate"`
 - Quick → `RALPH_FLAGS=""`
 - Inferno → `RALPH_FLAGS="--orchestrate --parallel"`
 
-**STEG 5: PUSHA TILL GITHUB**
+**STEP 5: PUSH TO GITHUB**
 ```bash
 git add -A
 git commit -m "Deploy: $(date +%Y-%m-%d_%H:%M)" || true
 git push origin main
 ```
 
-**STEG 6: STARTA PÅ VM**
+**STEP 6: START ON VM**
 
-Använd RALPH_FLAGS från steg 3. Kör via SSH:
+Use RALPH_FLAGS from step 3. Run via SSH:
 ```bash
-# Hämta VM-config
+# Get VM config
 source ~/.ralph-vm
 
-# SSH till VM och kör (RALPH_FLAGS sätts baserat på mode-val)
+# SSH to VM and run (RALPH_FLAGS set based on mode choice)
 ssh $VM_USER@$VM_IP << EOF
-  # Cleanup - döda gamla processer innan vi startar
+  # Cleanup - kill old processes before starting
   echo "Cleaning up old processes..."
   supabase stop 2>/dev/null || true
   pkill -f "vite|next|node.*dev" 2>/dev/null || true
@@ -178,7 +178,7 @@ ssh $VM_USER@$VM_IP << EOF
 
   cd ~/projects
 
-  # Klona eller uppdatera repo
+  # Clone or update repo
   REPO_NAME=\$(basename \$(git remote get-url origin 2>/dev/null || echo "project") .git)
 
   if [ -d "\$REPO_NAME" ]; then
@@ -189,39 +189,39 @@ ssh $VM_USER@$VM_IP << EOF
     cd "\$REPO_NAME"
   fi
 
-  # Installera node_modules om saknas
+  # Install node_modules if missing
   [ -f "package.json" ] && [ ! -d "node_modules" ] && npm install
 
-  # Gör ralph körbar
+  # Make ralph executable
   chmod +x ralph .ralph/scripts/*.sh 2>/dev/null || true
 
-  # Starta Ralph med vald mode
+  # Start Ralph with selected mode
   nohup ./.ralph/scripts/ralph.sh $RALPH_FLAGS > ralph-deploy.log 2>&1 &
-  echo "Ralph startad med PID: \$! (mode: $RALPH_FLAGS)"
+  echo "Ralph started with PID: \$! (mode: $RALPH_FLAGS)"
 EOF
 ```
 
 **MODES:**
 - Standard: `--orchestrate` (E2E + auto-CR)
-- Quick: (inga flaggor) - bara build verify
-- Inferno: `--orchestrate --parallel` (allt)
+- Quick: (no flags) - just build verify
+- Inferno: `--orchestrate --parallel` (everything)
 
-**STEG 7: BEKRÄFTA**
-Skriv ut:
+**STEP 7: CONFIRM**
+Output:
 ```
-✅ DEPLOY KLAR!
+✅ DEPLOY COMPLETE!
 
-Ralph kör nu på VM: $VM_IP
+Ralph is now running on VM: $VM_IP
 
-Följ progress:
-  - ntfy.sh (notifieringar)
+Follow progress:
+  - ntfy.sh (notifications)
   - ssh $VM_USER@$VM_IP 'tail -f ~/projects/REPO/ralph-deploy.log'
 
-När klar:
-  /ralph:review    # Öppna tunnlar och testa
+When done:
+  /ralph:review    # Open tunnels and test
 ```
 
-**VIKTIGT:**
-- Använd `gh repo clone` INTE `git clone` (hanterar auth)
-- Kör ralph.sh i bakgrunden med nohup
-- Ge användaren kommandon för att följa progress
+**IMPORTANT:**
+- Use `gh repo clone` NOT `git clone` (handles auth)
+- Run ralph.sh in background with nohup
+- Give the user commands to follow progress
