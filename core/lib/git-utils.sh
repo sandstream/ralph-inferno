@@ -14,17 +14,21 @@ commit_changes() {
     git commit -m "$message" >/dev/null 2>&1 || true
 }
 
-# Push to remote
+# Push to remote (uses current branch by default)
 push_changes() {
-    local branch="${1:-$MAIN_BRANCH}"
+    local current_branch
+    current_branch=$(git branch --show-current 2>/dev/null || echo "$MAIN_BRANCH")
+    local branch="${1:-$current_branch}"
 
     git push origin "$branch" >/dev/null 2>&1 || true
 }
 
-# Commit and push
+# Commit and push (uses current branch by default)
 commit_and_push() {
     local message="$1"
-    local branch="${2:-$MAIN_BRANCH}"
+    local current_branch
+    current_branch=$(git branch --show-current 2>/dev/null || echo "$MAIN_BRANCH")
+    local branch="${2:-$current_branch}"
 
     commit_changes "$message"
     push_changes "$branch"

@@ -175,11 +175,13 @@ run_spec() {
         log "${YELLOW}Attempt $attempt/$MAX_RETRIES${NC}"
 
         local output exit_code=0
+        local build_cmd
+        build_cmd=$(detect_build_cmd 2>/dev/null || echo "the build command")
         local prompt="$(cat "$spec")
 
 ---
 When complete: write $COMPLETION_MARKER
-Before DONE: run 'npm run build' and verify it passes."
+Before DONE: run '$build_cmd' and verify it passes."
 
         output=$(echo "$prompt" | timeout $TIMEOUT claude --dangerously-skip-permissions -p 2>&1) || exit_code=$?
 

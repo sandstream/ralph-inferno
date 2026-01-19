@@ -231,6 +231,26 @@ npx ralph-inferno install
 /ralph:deploy          # Run fixes
 ```
 
+## Language Agnostic
+
+Ralph auto-detects your project type and uses the appropriate build/test commands:
+
+| Project Type | Build Command | Test Command |
+|--------------|---------------|--------------|
+| Node.js (package.json) | `npm run build` | `npm test` |
+| Rust (Cargo.toml) | `cargo build` | `cargo test` |
+| Go (go.mod) | `go build ./...` | `go test ./...` |
+| Python (pyproject.toml) | `python -m build` | `pytest` |
+| Makefile | `make build` | `make test` |
+
+**Custom commands:** Override in `.ralph/config.json`:
+```json
+{
+  "build_cmd": "yarn build",
+  "test_cmd": "yarn test:ci"
+}
+```
+
 ## Safety
 
 Ralph runs AI-generated code autonomously. For safety:
@@ -257,7 +277,7 @@ Configuration is stored in `.ralph/config.json`:
 
 ```json
 {
-  "version": "1.0.4",
+  "version": "1.0.6",
   "language": "en",
   "provider": "hcloud",
   "vm_name": "ralph-sandbox",
@@ -271,7 +291,9 @@ Configuration is stored in `.ralph/config.json`:
   "notifications": {
     "ntfy_enabled": true,
     "ntfy_topic": "my-unique-ralph-topic"
-  }
+  },
+  "build_cmd": "npm run build",
+  "test_cmd": "npm test"
 }
 ```
 
