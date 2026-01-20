@@ -4,12 +4,15 @@
 #
 # Usage:
 #   ./ralph.sh                    # Clean loop (default)
+#   ./ralph.sh --smart            # Thread intelligence (auto-select best thread)
 #   ./ralph.sh --orchestrate      # Middle loop with E2E + auto-CR
 #   ./ralph.sh --parallel         # Parallel with worktrees
 #   ./ralph.sh --status           # Show status
 #   ./ralph.sh --cost             # Show cost estimate
+#   ./ralph.sh --strategy         # Show thread strategy for all specs
 #   ./ralph.sh --help             # Help
 #
+# Thread Intelligence: Analyzes each spec and picks the best execution style
 # Clean loop: ~150 lines, follows Ryan Carson / Geoffrey Huntley approach
 # =============================================================================
 
@@ -48,6 +51,13 @@ if [[ "${1:-}" == "--cost" ]] || [[ "${1:-}" == "-c" ]]; then
     exit 0
 fi
 
+# Check for --strategy (show thread recommendations)
+if [[ "${1:-}" == "--strategy" ]]; then
+    source "$LIB_DIR/thread-selector.sh"
+    print_thread_summary "specs"
+    exit 0
+fi
+
 # Check for --help
 if [[ "${1:-}" == "--help" ]] || [[ "${1:-}" == "-h" ]]; then
     cat << 'EOF'
@@ -56,8 +66,10 @@ ralph.sh - The One Script
 USAGE:
   ./ralph.sh                    Clean loop (default)
   ./ralph.sh spec.md            Run single spec
+  ./ralph.sh --smart            Thread intelligence - auto-select best thread type
   ./ralph.sh --orchestrate      Middle loop with E2E test + auto-CR
   ./ralph.sh --parallel         Parallel with worktrees + dynamic scaling
+  ./ralph.sh --strategy         Show recommended thread type for each spec
   ./ralph.sh --watch            Fireplace dashboard
   ./ralph.sh --status           Show progress
   ./ralph.sh --cost             Show cost estimate
@@ -65,9 +77,15 @@ USAGE:
   ./ralph.sh --help             This help
 
 MODES:
-  default       Sequential, one spec at a time
+  default       Sequential, one spec at a time (base thread)
+  --smart       Thread intelligence: analyzes each spec, picks best thread type
+                  - base:    Simple specs, run once
+                  - fusion:  Uncertain specs, try 3 ways, pick best
+                  - chained: Risky specs, extra verification
+                  - long:    Complex specs, extended timeout
   --orchestrate Middle loop: specs → E2E → design review → CR → retry
   --parallel    Parallel worktrees with dynamic scaling
+  --strategy    Preview thread recommendations without running
   --watch       Live dashboard showing progress
   --cost        Token usage and cost estimate
   --full        Legacy monolithic script (all features)
@@ -97,6 +115,16 @@ if [[ "${1:-}" == "--parallel" ]] || [[ "${1:-}" == "-p" ]]; then
     PARALLEL_MODE=true
     shift
     source "$LIB_DIR/parallel.sh"
+fi
+
+# Check for --smart (thread intelligence)
+SMART_MODE=false
+if [[ "${1:-}" == "--smart" ]] || [[ "${1:-}" == "-S" ]]; then
+    SMART_MODE=true
+    shift
+    source "$LIB_DIR/thread-selector.sh"
+    source "$LIB_DIR/fusion.sh"
+    LOG_THREAD_DECISIONS=true  # Show thread selection decisions
 fi
 
 # Config
@@ -233,15 +261,176 @@ Before DONE: run '$build_cmd' and verify it passes."
     return 1
 }
 
+# =============================================================================
+# SMART MODE: Thread-Intelligent Spec Execution
+# =============================================================================
+
+# Run a spec with automatic thread type selection
+run_spec_smart() {
+    local spec="$1"
+    local spec_name=$(basename "$spec" .md)
+
+    # Skip if already done
+    if is_spec_done "$spec"; then
+        log "${CYAN}⏭ Already done: $spec_name${NC}"
+        return 0
+    fi
+
+    # Analyze spec and select thread type
+    log "${CYAN}Analyzing: $spec_name${NC}"
+    local thread_type=$(select_thread "$spec" true)  # true = use Claude if needed
+
+    log "${YELLOW}Thread type: $thread_type${NC}"
+
+    # Route to appropriate runner
+    case "$thread_type" in
+        "fusion")
+            log "${CYAN}━━━ Running FUSION thread (3 attempts) ━━━${NC}"
+            if run_fusion_thread "$spec" 3; then
+                # Verify and mark done
+                if verify_build; then
+                    check_dangerous && check_secrets && commit_and_push "Ralph [fusion]: $spec_name"
+                    mark_spec_done "$spec"
+                    notify_spec_done "$spec"
+                    return 0
+                fi
+            fi
+            return 1
+            ;;
+
+        "chained")
+            log "${CYAN}━━━ Running CHAINED thread (extra verification) ━━━${NC}"
+            # Run with extra verification - essentially run_spec but stricter
+            local old_retries=$MAX_RETRIES
+            MAX_RETRIES=5  # More retries for risky specs
+            run_spec "$spec"
+            local result=$?
+            MAX_RETRIES=$old_retries
+            return $result
+            ;;
+
+        "long")
+            log "${CYAN}━━━ Running LONG thread (extended timeout) ━━━${NC}"
+            # Run with extended timeout
+            local old_timeout=$TIMEOUT
+            TIMEOUT=3600  # 1 hour for complex specs
+            run_spec "$spec"
+            local result=$?
+            TIMEOUT=$old_timeout
+            return $result
+            ;;
+
+        "parallel")
+            log "${CYAN}━━━ Marked for PARALLEL (will batch with others) ━━━${NC}"
+            # For now, just run normally - parallel batching happens at main level
+            run_spec "$spec"
+            return $?
+            ;;
+
+        *)
+            # Default: base thread (normal execution)
+            log "${CYAN}━━━ Running BASE thread (normal) ━━━${NC}"
+            run_spec "$spec"
+            return $?
+            ;;
+    esac
+}
+
+# Batch parallel specs together
+run_parallel_batch() {
+    local parallel_specs=("$@")
+
+    if [ ${#parallel_specs[@]} -eq 0 ]; then
+        return 0
+    fi
+
+    if [ ${#parallel_specs[@]} -eq 1 ]; then
+        # Only one spec, run normally
+        run_spec "${parallel_specs[0]}"
+        return $?
+    fi
+
+    log "${CYAN}━━━ Running ${#parallel_specs[@]} specs in PARALLEL ━━━${NC}"
+    source "$LIB_DIR/parallel.sh" 2>/dev/null || true
+    run_parallel run_spec "${parallel_specs[@]}"
+    return $?
+}
+
+# Main smart execution loop
+# Sets globals: SMART_SPECS_DONE, SMART_SPECS_FAILED
+run_all_specs_smart() {
+    SMART_SPECS_DONE=0
+    SMART_SPECS_FAILED=0
+    local parallel_batch=()
+
+    while true; do
+        local spec=$(next_incomplete_spec)
+        [ -z "$spec" ] && break
+
+        local spec_name=$(basename "$spec" .md)
+
+        # Check thread type
+        local thread_type=$(select_thread "$spec" false)  # Fast mode for batching decisions
+
+        if [ "$thread_type" = "parallel" ]; then
+            # Collect parallel specs for batch execution
+            parallel_batch+=("$spec")
+            log "${YELLOW}Queued for parallel: $spec_name${NC}"
+        else
+            # First, run any accumulated parallel batch
+            if [ ${#parallel_batch[@]} -gt 0 ]; then
+                run_parallel_batch "${parallel_batch[@]}" && \
+                    ((SMART_SPECS_DONE += ${#parallel_batch[@]})) || \
+                    ((SMART_SPECS_FAILED += ${#parallel_batch[@]}))
+                parallel_batch=()
+            fi
+
+            # Then run this spec with its designated thread type
+            run_spec_smart "$spec" && ((SMART_SPECS_DONE++)) || ((SMART_SPECS_FAILED++))
+        fi
+    done
+
+    # Run any remaining parallel batch
+    if [ ${#parallel_batch[@]} -gt 0 ]; then
+        run_parallel_batch "${parallel_batch[@]}" && \
+            ((SMART_SPECS_DONE += ${#parallel_batch[@]})) || \
+            ((SMART_SPECS_FAILED += ${#parallel_batch[@]}))
+    fi
+}
+
 # Main
 main() {
     log "${CYAN}Ralph Starting${NC}"
-    notify "🚀 Ralph starting"
+
+    # Show mode
+    if [ "$SMART_MODE" = true ]; then
+        log "${YELLOW}🧠 Thread Intelligence ENABLED${NC}"
+        notify "🚀 Ralph starting (smart mode)"
+    else
+        notify "🚀 Ralph starting"
+    fi
 
     local specs_done=0 specs_failed=0
 
+    # Smart mode: auto-select thread type per spec
+    if [ "$SMART_MODE" = true ]; then
+        log "${YELLOW}Analyzing specs for optimal thread types...${NC}"
+
+        if [ $# -gt 0 ]; then
+            # Specific specs provided
+            for spec in "$@"; do
+                run_spec_smart "$spec" && ((specs_done++)) || ((specs_failed++))
+            done
+        else
+            # Run all specs with smart selection
+            # Note: run_all_specs_smart sets SMART_SPECS_DONE and SMART_SPECS_FAILED globals
+            run_all_specs_smart
+            specs_done=$SMART_SPECS_DONE
+            specs_failed=$SMART_SPECS_FAILED
+        fi
+
     # Parallel mode uses worktrees
-    if [ "$PARALLEL_MODE" = true ]; then
+    elif [ "$PARALLEL_MODE" = true ]; then
         log "${YELLOW}Parallel mode enabled${NC}"
         local specs=()
         if [ $# -gt 0 ]; then
