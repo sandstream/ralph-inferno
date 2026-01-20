@@ -2,7 +2,7 @@
 
 > "One task per iteration. Commit when tests pass." - Geoffrey Huntley
 
-**Läs först:** CLAUDE.md för context zones, subagent-regler, och kodfilosofi.
+**Läs först:** AGENTS.md (Codex) eller CLAUDE.md (Claude) för context zones, subagent-regler, och kodfilosofi.
 
 ---
 

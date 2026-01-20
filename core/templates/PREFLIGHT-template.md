@@ -43,7 +43,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 - [ ] SSH access verified: `ssh ralph@{VM_IP}`
 - [ ] Git installed and configured
 - [ ] Node.js 18+ installed
-- [ ] Claude Code CLI installed
+- [ ] Codex or Claude CLI installed
 
 ### GitHub
 - [ ] Repository created: `github.com/{user}/{repo}`

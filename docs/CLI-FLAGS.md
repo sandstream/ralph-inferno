@@ -60,7 +60,7 @@ The main entry point for running Ralph on the VM.
 ```
 
 - Everything in Standard mode, plus:
-- Design review with Claude Vision
+- Design review with agent image input (Codex or Claude)
 - Auto-CR for design issues
 - Parallel worktrees for faster execution
 - Full autonomous power
@@ -78,7 +78,7 @@ The main entry point for running Ralph on the VM.
 
 ## Deploy Mode Selection
 
-When running `/ralph:deploy`, you choose the mode:
+When running `/ralph:deploy` or `/prompts:ralph-deploy`, you choose the mode:
 
 ```
 Vilken mode vill du köra Ralph i?
@@ -103,16 +103,18 @@ During `install`, you'll be asked:
 3. VM name and region
 4. ntfy.sh notifications (optional)
 5. GitHub username (auto-detected from `gh` CLI)
-6. Claude authentication method (subscription or API key)
+6. Agent authentication method (Claude or Codex)
 
-## Slash Commands
+## Commands & Prompts
 
 | Command | Description |
 |---------|-------------|
-| `/ralph:discover` | Autonomous discovery loop → PRD |
-| `/ralph:plan` | Break down PRD → specs |
-| `/ralph:deploy` | Push to GitHub, start on VM |
-| `/ralph:review` | Open tunnels, test the app |
-| `/ralph:change-request` | Document bugs → CR specs |
-| `/ralph:status` | Check Ralph's progress on VM |
-| `/ralph:abort` | Stop Ralph on VM |
+| Claude Code | Codex CLI | Description |
+|-------------|-----------|-------------|
+| `/ralph:discover` | `/prompts:ralph-discover` | Autonomous discovery loop → PRD |
+| `/ralph:plan` | `/prompts:ralph-plan` | Break down PRD → specs |
+| `/ralph:deploy` | `/prompts:ralph-deploy` | Push to GitHub, start on VM |
+| `/ralph:review` | `/prompts:ralph-review` | Open tunnels, test the app |
+| `/ralph:change-request` | `/prompts:ralph-change-request` | Document bugs → CR specs |
+| `/ralph:status` | `/prompts:ralph-status` | Check Ralph's progress on VM |
+| `/ralph:abort` | `/prompts:ralph-abort` | Stop Ralph on VM |

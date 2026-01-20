@@ -1,4 +1,4 @@
-# CLAUDE.md - Discovery Phase
+# AGENTS.md / CLAUDE.md - Discovery Phase
 
 Du är i **Discovery Mode**. Din uppgift är att utforska en produktidé från alla vinklar
 och producera en komplett PRD (Product Requirements Document).

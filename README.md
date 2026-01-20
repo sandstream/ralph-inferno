@@ -22,25 +22,23 @@ AI-driven autonomous development workflow.
 
 ## How It Works
 
-Ralph installs as **slash commands** in Claude Code. When you run `npx ralph-inferno install`, it creates a `.ralph/` folder with scripts and a `.claude/commands/` folder with command definitions. Claude Code automatically picks these up - no separate CLI needed!
+Ralph installs as **Claude Code commands** and **Codex CLI prompts**. When you run `npx ralph-inferno install`, it creates a `.ralph/` folder with scripts, syncs `.claude/commands/` for Claude Code, and syncs `~/.codex/prompts/` for Codex CLI.
 
 ```
-Local Machine                      VM (Sandbox)
-┌─────────────────┐               ┌─────────────────┐
-│ Claude Code     │               │ Claude Code     │
-│ + Ralph commands│    GitHub     │ + ralph.sh      │
-│                 │ ────────────► │                 │
-│ /ralph:discover │               │ Runs specs      │
-│ /ralph:plan     │               │ autonomously    │
-│ /ralph:deploy   │               │                 │
-└─────────────────┘               └─────────────────┘
+Local Machine                               VM (Sandbox)
+┌──────────────────────────┐              ┌─────────────────┐
+│ Claude Code or Codex CLI │              │ Agent CLI       │
+│ + Ralph commands/prompts │     GitHub   │ + ralph.sh      │
+│                          │ ───────────► │                 │
+│ /ralph:* or /prompts:*   │              │ Runs specs      │
+└──────────────────────────┘              └─────────────────┘
 ```
 
 **The flow:**
-1. You work locally with Claude Code, using `/ralph:discover` and `/ralph:plan`
-2. `/ralph:deploy` pushes your specs to GitHub and starts Ralph on the VM
+1. You work locally with Claude Code (`/ralph:*`) or Codex CLI (`/prompts:ralph-*`)
+2. Deploy pushes your specs to GitHub and starts Ralph on the VM
 3. Ralph runs autonomously on the VM while you sleep
-4. Next day: `/ralph:review` to test what was built
+4. Next day: review what was built
 
 ## Requirements
 
@@ -49,7 +47,8 @@ Local Machine                      VM (Sandbox)
 | Tool | Required | How to install |
 |------|----------|----------------|
 | Node.js | Yes | `brew install node` |
-| Claude Code | Yes | `npm install -g @anthropic-ai/claude-code` |
+| Claude Code | Yes (choose one) | `npm install -g @anthropic-ai/claude-code` |
+| Codex CLI | Yes (choose one) | `npm install -g @openai/codex` |
 | GitHub CLI | Recommended | `brew install gh` then `gh auth login` |
 
 ### VM (Sandbox)
@@ -58,15 +57,19 @@ Local Machine                      VM (Sandbox)
 |------|----------|-------|
 | SSH access | Yes | You need to be able to SSH into the VM |
 | Git | Yes | Usually pre-installed |
-| Claude Code | Yes | `npm install -g @anthropic-ai/claude-code` |
-| Claude auth | Yes | See [Authentication](#authentication) below |
+| Claude Code | Yes (choose one) | `npm install -g @anthropic-ai/claude-code` |
+| Claude auth | Yes (if using Claude) | See [Authentication](#authentication) below |
+| Codex CLI | Yes (choose one) | `npm install -g @openai/codex` |
+| Codex auth | Yes (if using Codex) | Run `codex login` OR set `OPENAI_API_KEY` |
 | GitHub CLI | Yes | `brew install gh` then `gh auth login` |
 
 **Important:** Both machines need `gh auth login` for Git operations to work!
 
 ### Optional
 
-- **Claude Chrome Extension** - Lets Claude browse websites during `/ralph:discover`
+- **Codex web search** - Run Codex with `--search` (or enable it in Codex config) for `/prompts:ralph-discover`.
+- **Claude Chrome Extension** - Lets Claude browse websites during `/ralph:discover`.
+- If browsing isn’t available, use the `dev-browser` skill as a fallback.
 - Cloud CLI (`hcloud`, `gcloud`, `doctl`, `aws`) - For VM management
 - [ntfy.sh](https://ntfy.sh) - Push notifications when Ralph finishes
 
@@ -81,7 +84,8 @@ npx ralph-inferno install
 
 This creates:
 - `.ralph/` - Scripts and config
-- `.claude/commands/` - Slash commands for Claude Code
+- `.claude/commands/` - Claude Code commands
+- `~/.codex/prompts/` - Codex prompt files
 
 ### Step 2: Set up your VM
 
@@ -92,11 +96,19 @@ SSH into your VM and install the prerequisites:
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
-# Install Claude Code
+# Install Claude Code (if using Claude)
 npm install -g @anthropic-ai/claude-code
+
+# Install Codex CLI (if using Codex)
+npm install -g @openai/codex
 
 # Authenticate Claude - see Authentication section below
 claude login                    # Simplest option for Pro/Max subscribers
+
+# Authenticate Codex (if using Codex):
+codex login                      # If you prefer browser-based login
+# OR
+export OPENAI_API_KEY="sk-..."   # If using API key
 
 # Install and authenticate GitHub CLI
 sudo apt-get install gh
@@ -109,16 +121,25 @@ npx playwright install
 
 ### Step 3: Verify setup
 
-On your local machine, start Claude Code:
+On your local machine, start your CLI:
+
+Claude Code:
 ```bash
 claude
 ```
-
-Type `/ralph:` and you should see the available commands:
+Then run:
 - `/ralph:discover`
 - `/ralph:plan`
 - `/ralph:deploy`
-- etc.
+
+Codex CLI:
+```bash
+codex
+```
+Then run:
+- `/prompts:ralph-discover`
+- `/prompts:ralph-plan`
+- `/prompts:ralph-deploy`
 
 ## Authentication
 
@@ -161,9 +182,10 @@ Update core files while preserving your config:
 npx ralph-inferno update
 ```
 
-Or use the slash command in Claude Code:
+Or use the command/prompt:
 ```
-/ralph:update
+/ralph:update            # Claude Code
+/prompts:ralph-update    # Codex CLI
 ```
 
 ## Workflow
@@ -199,22 +221,26 @@ Ralph supports two entry points: **Greenfield** (new apps) and **Brownfield** (e
                       /ralph:deploy → VM → /ralph:review
 ```
 
-### Commands
+Codex CLI equivalents use `/prompts:ralph-*` (see table below).
+```
 
-| Command | Description |
-|---------|-------------|
-| `/ralph:idea` | **Greenfield start** - BMAD brainstorm → PROJECT-BRIEF.md |
-| `/ralph:discover` | BMAD analyst mode → PRD.md |
-| `/ralph:change-request` | **Brownfield start** - Analyze changes → CR specs |
-| `/ralph:plan` | Creates specs from PRD or Change Request |
-| `/ralph:deploy` | Push to GitHub, choose mode, start Ralph on VM |
-| `/ralph:review` | Open SSH tunnels, test the app |
-| `/ralph:status` | Check Ralph's progress on VM |
-| `/ralph:abort` | Stop Ralph on VM |
+### Commands / Prompts
+| Claude Code | Codex CLI | Description |
+|-------------|-----------|-------------|
+| `/ralph:idea` | `/prompts:ralph-idea` | **Greenfield start** - BMAD brainstorm → PROJECT-BRIEF.md |
+| `/ralph:discover` | `/prompts:ralph-discover` | BMAD analyst mode → PRD.md |
+| `/ralph:change-request` | `/prompts:ralph-change-request` | **Brownfield start** - Analyze changes → CR specs |
+| `/ralph:plan` | `/prompts:ralph-plan` | Creates specs from PRD or Change Request |
+| `/ralph:preflight` | `/prompts:ralph-preflight` | Verify requirements before deployment |
+| `/ralph:deploy` | `/prompts:ralph-deploy` | Push to GitHub, choose mode, start Ralph on VM |
+| `/ralph:review` | `/prompts:ralph-review` | Open SSH tunnels, test the app |
+| `/ralph:status` | `/prompts:ralph-status` | Check Ralph's progress on VM |
+| `/ralph:abort` | `/prompts:ralph-abort` | Stop Ralph on VM |
+| `/ralph:update` | `/prompts:ralph-update` | Update Ralph to latest version |
 
 ### Deploy Modes
 
-When running `/ralph:deploy`, you choose a mode:
+When running deploy (`/ralph:deploy` or `/prompts:ralph-deploy`), you choose a mode:
 
 | Mode | What it does |
 |------|--------------|
@@ -224,9 +250,11 @@ When running `/ralph:deploy`, you choose a mode:
 
 ### Tips for Best Results
 
-**Discovery mode works best when Claude can browse the web.**
+**Discovery mode works best when the agent can browse the web.**
 
-Install the **Claude Chrome Extension** - it lets Claude see and interact with websites you reference during `/ralph:discover`. This enables better research of competitors, APIs, and documentation.
+- Codex CLI: use web search (`--search` or enable it in config)
+- Claude Code: use the Claude Chrome Extension
+- Otherwise: use the `dev-browser` skill as a fallback
 
 ### Example: New App (Greenfield)
 
@@ -244,6 +272,13 @@ npx ralph-inferno install
 
 # 4. Review
 /ralph:review               # Test what Ralph built
+
+# Codex CLI equivalents
+/prompts:ralph-idea "todo app"
+/prompts:ralph-discover
+/prompts:ralph-plan
+/prompts:ralph-deploy
+/prompts:ralph-review
 ```
 
 ### Example: Existing App (Brownfield)
@@ -258,6 +293,12 @@ npx ralph-inferno install
 
 # 3. Review
 /ralph:review               # Test the changes
+
+# Codex CLI equivalents
+/prompts:ralph-change-request "add dark mode"
+/prompts:ralph-plan
+/prompts:ralph-deploy
+/prompts:ralph-review
 ```
 
 ## Language Agnostic
@@ -279,6 +320,8 @@ Ralph auto-detects your project type and uses the appropriate build/test command
   "test_cmd": "yarn test:ci"
 }
 ```
+
+Set `agent` to `claude` or `codex` (or `auto` to use whatever is installed on the VM).
 
 ## Safety
 
@@ -314,8 +357,12 @@ Configuration is stored in `.ralph/config.json`:
   "github": {
     "username": "your-username"
   },
+  "agent": "claude",
   "claude": {
     "auth_method": "subscription"
+  },
+  "codex": {
+    "auth_method": "account"
   },
   "notifications": {
     "ntfy_enabled": true,

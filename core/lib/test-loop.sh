@@ -4,6 +4,12 @@
 
 TEST_LOOP_LOADED=true
 
+SCRIPT_DIR_TEST_LOOP="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR_TEST_LOOP/agent-utils.sh" ]; then
+    # shellcheck disable=SC1091
+    source "$SCRIPT_DIR_TEST_LOOP/agent-utils.sh"
+fi
+
 # Track CR depth to prevent infinite loops
 CR_DEPTH=${CR_DEPTH:-0}
 MAX_CR_DEPTH=1  # Only allow 1 level of CR (no CR-of-CR)
@@ -57,7 +63,7 @@ generate_cr() {
 
     log "${YELLOW}Generating CR: $cr_file${NC}"
 
-    # Let Claude analyze and create CR
+    # Let the configured agent analyze and create CR
     local prompt="E2E tests failed after running spec: $spec_name
 
 Test output:
@@ -80,7 +86,7 @@ Use this format:
 - [ ] E2E tests pass
 - [ ] npm run build succeeds"
 
-    echo "$prompt" | timeout 300 claude --dangerously-skip-permissions -p > /dev/null 2>&1
+    run_agent_prompt "$prompt" 300 > /dev/null 2>&1
 
     if [ -f "$cr_file" ]; then
         log "${GREEN}CR created: $cr_file${NC}"
@@ -92,7 +98,7 @@ Use this format:
 }
 
 # =============================================================================
-# CLAUDE VISION - Design Review
+# AGENT IMAGE REVIEW - Design Review
 # =============================================================================
 
 # Take screenshots of the app
@@ -124,7 +130,7 @@ const { chromium } = require('@playwright/test');
     log "Captured $count screenshot(s)"
 }
 
-# Run Claude Vision design review
+# Run agent image design review
 run_design_review() {
     local spec_name="$1"
     local screenshot_dir=".screenshots"
@@ -150,7 +156,7 @@ run_design_review() {
     # Extract design system from PRD
     local design_system=$(sed -n '/## Design System/,/^## /p' docs/PRD.md | head -50)
 
-    # Build prompt for Claude Vision
+    # Build prompt for agent image review
     local prompt="Review this screenshot against the design system.
 
 DESIGN SYSTEM:
@@ -167,14 +173,14 @@ If it looks good, say 'DESIGN_OK'.
 
 Be concise - max 10 lines."
 
-    # Call Claude with vision (using base64 encoded image)
+    # Call agent with image input
     local screenshot=$(ls -1 "$screenshot_dir"/*.png 2>/dev/null | head -1)
     if [ -z "$screenshot" ]; then
         return 0
     fi
 
     local result
-    result=$(echo "$prompt" | claude --dangerously-skip-permissions -p --image "$screenshot" 2>&1) || true
+    result=$(run_agent_image "$prompt" "$screenshot") || true
 
     if echo "$result" | grep -q "DESIGN_OK"; then
         log "${GREEN}✅ Design review passed${NC}"
@@ -229,7 +235,7 @@ Format:
 - [ ] Design review passes
 - [ ] npm run build succeeds"
 
-    echo "$prompt" | timeout 300 claude --dangerously-skip-permissions -p > /dev/null 2>&1
+    run_agent_prompt "$prompt" 300 > /dev/null 2>&1
 
     if [ -f "$cr_file" ]; then
         log "${GREEN}Design CR created: $cr_file${NC}"

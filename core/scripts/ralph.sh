@@ -107,6 +107,7 @@ source "$LIB_DIR/rate-limit.sh"
 source "$LIB_DIR/summary.sh"
 source "$LIB_DIR/tokens.sh"
 source "$LIB_DIR/test-loop.sh"
+source "$LIB_DIR/agent-utils.sh"
 
 # Check for --parallel (after loading libs)
 PARALLEL_MODE=false
@@ -134,7 +135,8 @@ COMPLETION_MARKER="<promise>DONE</promise>"
 # Logs
 LOG_DIR=".ralph/logs"
 mkdir -p "$LOG_DIR"
-RAW_LOG="$LOG_DIR/claude-raw.log"
+AGENT_NAME=$(get_agent)
+RAW_LOG="$LOG_DIR/${AGENT_NAME}-raw.log"
 ERROR_LOG="$LOG_DIR/errors.log"
 
 # Colors
@@ -146,8 +148,8 @@ NC='\033[0m'
 
 log() { echo -e "[$(date +%H:%M:%S)] $1"; }
 
-# Log raw claude output to file (always), and show tail on error
-log_claude_output() {
+# Log raw agent output to file (always), and show tail on error
+log_agent_output() {
     local spec_name="$1"
     local output="$2"
     local exit_code="${3:-0}"
@@ -198,10 +200,10 @@ run_spec() {
 When complete: write $COMPLETION_MARKER
 Before DONE: run '$build_cmd' and verify it passes."
 
-        output=$(echo "$prompt" | timeout $TIMEOUT claude --dangerously-skip-permissions -p 2>&1) || exit_code=$?
+        output=$(run_agent_prompt "$prompt" "$TIMEOUT") || exit_code=$?
 
         # Log output to file (always)
-        log_claude_output "$spec_name" "$output" "$exit_code"
+        log_agent_output "$spec_name" "$output" "$exit_code"
 
         if is_rate_limited "$output"; then
             handle_rate_limit "$spec_name"

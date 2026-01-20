@@ -4,6 +4,7 @@ import fs from 'fs-extra';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { execSync } from 'child_process';
+import { homedir } from 'os';
 
 // Auto-detect GitHub username from gh CLI
 function getGitHubUsername() {
@@ -219,22 +220,35 @@ By continuing, you accept full responsibility for usage.
     }
   ]);
 
-  // Claude authentication
-  const authAnswers = await inquirer.prompt([
+  // Agent selection
+  const agentAnswers = await inquirer.prompt([
     {
       type: 'rawlist',
-      name: 'claudeAuth',
-      message: 'How will Claude authenticate on the VM?',
+      name: 'agent',
+      message: 'Which CLI will run on the VM?',
       choices: [
-        { name: 'Claude Pro/Max subscription (recommended)', value: 'subscription' },
-        { name: 'Anthropic API key', value: 'api_key' }
+        { name: 'Claude Code (default)', value: 'claude' },
+        { name: 'Codex CLI', value: 'codex' }
       ]
     }
   ]);
 
-  // Show instructions based on choice
-  if (authAnswers.claudeAuth === 'subscription') {
-    console.log(chalk.cyan(`
+  let authAnswers = {};
+  if (agentAnswers.agent === 'claude') {
+    authAnswers = await inquirer.prompt([
+      {
+        type: 'rawlist',
+        name: 'claudeAuth',
+        message: 'How will Claude authenticate on the VM?',
+        choices: [
+          { name: 'Claude Pro/Max subscription (recommended)', value: 'subscription' },
+          { name: 'Anthropic API key', value: 'api_key' }
+        ]
+      }
+    ]);
+
+    if (authAnswers.claudeAuth === 'subscription') {
+      console.log(chalk.cyan(`
 ┌─────────────────────────────────────────────────────────────┐
 │  Claude Subscription Setup                                  │
 ├─────────────────────────────────────────────────────────────┤
@@ -248,8 +262,8 @@ By continuing, you accept full responsibility for usage.
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 `));
-  } else {
-    console.log(chalk.cyan(`
+    } else {
+      console.log(chalk.cyan(`
 ┌─────────────────────────────────────────────────────────────┐
 │  Anthropic API Key Setup                                    │
 ├─────────────────────────────────────────────────────────────┤
@@ -264,6 +278,56 @@ By continuing, you accept full responsibility for usage.
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 `));
+    }
+  } else {
+    authAnswers = await inquirer.prompt([
+      {
+        type: 'rawlist',
+        name: 'codexAuth',
+        message: 'How will Codex authenticate on the VM?',
+        choices: [
+          { name: 'Codex login (ChatGPT account) (recommended)', value: 'account' },
+          { name: 'OpenAI API key', value: 'api_key' }
+        ]
+      }
+    ]);
+
+    if (authAnswers.codexAuth === 'account') {
+      console.log(chalk.cyan(`
+┌─────────────────────────────────────────────────────────────┐
+│  Codex Login Setup                                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  After VM is created, SSH in and run:                       │
+│                                                             │
+│    codex login                                              │
+│                                                             │
+│  This will open a browser to authenticate.                  │
+│  You only need to do this once per VM.                      │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+`));
+    } else {
+      console.log(chalk.cyan(`
+┌─────────────────────────────────────────────────────────────┐
+│  OpenAI API Key Setup                                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  After VM is created, set the environment variable:         │
+│                                                             │
+│    export OPENAI_API_KEY="sk-..."                           │
+│                                                             │
+│  Or authenticate once via:                                  │
+│                                                             │
+│    echo "$OPENAI_API_KEY" | codex login --with-api-key       │
+│                                                             │
+│  Add to ~/.bashrc for persistence:                          │
+│                                                             │
+│    echo 'export OPENAI_API_KEY="sk-..."' >> ~/.bashrc        │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+`));
+    }
   }
 
   // Build config
@@ -281,10 +345,14 @@ By continuing, you accept full responsibility for usage.
     github: {
       username: githubAnswers.github_username
     },
-    claude: {
-      auth_method: authAnswers.claudeAuth
-    }
+    agent: agentAnswers.agent
   };
+
+  if (agentAnswers.agent === 'claude') {
+    config.claude = { auth_method: authAnswers.claudeAuth };
+  } else {
+    config.codex = { auth_method: authAnswers.codexAuth };
+  }
 
   // Install core files
   console.log(chalk.cyan('\nInstalling...'));
@@ -292,7 +360,7 @@ By continuing, you accept full responsibility for usage.
   await fs.ensureDir(TARGET_DIR);
 
   // Copy core directories
-  const dirs = ['lib', 'scripts', 'templates', '.claude'];
+  const dirs = ['lib', 'scripts', 'templates', '.claude', '.codex'];
   for (const dir of dirs) {
     const src = join(CORE_DIR, dir);
     const dest = join(TARGET_DIR, dir);
@@ -310,6 +378,15 @@ By continuing, you accept full responsibility for usage.
     await fs.ensureDir('.claude');
     await fs.copy(claudeSrc, claudeDest, { overwrite: true });
     console.log(chalk.green('✅ .claude/commands/ synced to project root'));
+  }
+
+  // Also sync Codex prompts to ~/.codex/prompts
+  const codexPromptsSrc = join(CORE_DIR, '.codex', 'prompts');
+  const codexPromptsDest = join(homedir(), '.codex', 'prompts');
+  if (await fs.pathExists(codexPromptsSrc)) {
+    await fs.ensureDir(codexPromptsDest);
+    await fs.copy(codexPromptsSrc, codexPromptsDest, { overwrite: true });
+    console.log(chalk.green('✅ ~/.codex/prompts/ synced'));
   }
 
   // Save version file for update checking
@@ -340,7 +417,7 @@ exec "$RALPH_DIR/scripts/ralph.sh" "$@"
 `));
 
   console.log(chalk.cyan('Next steps:'));
-  console.log(chalk.dim('  1. Run /discover in Claude Code to set up your project'));
+  console.log(chalk.dim('  1. Run /ralph:discover (Claude Code) or /prompts:ralph-discover (Codex CLI)'));
   console.log(chalk.dim('  2. Or run: ./ralph --help'));
   console.log('');
 }

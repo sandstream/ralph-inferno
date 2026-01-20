@@ -75,11 +75,13 @@ check_required() {
         fail "gh CLI - MISSING"
     fi
 
-    # Claude CLI
-    if command -v claude &>/dev/null; then
+    # Agent CLI (Codex or Claude)
+    if command -v codex &>/dev/null; then
+        ok "Codex CLI installed"
+    elif command -v claude &>/dev/null; then
         ok "Claude CLI installed"
     else
-        fail "Claude CLI - MISSING"
+        fail "Codex/Claude CLI - MISSING"
     fi
 }
 
@@ -129,11 +131,19 @@ check_auth() {
         fail "gh: NOT AUTHENTICATED"
     fi
 
-    # Claude auth
-    if claude auth status &>/dev/null 2>&1; then
-        ok "Claude: Authenticated"
-    else
-        fail "Claude: NOT AUTHENTICATED"
+    # Agent auth (Codex or Claude)
+    if command -v codex &>/dev/null; then
+        if codex login status &>/dev/null 2>&1; then
+            ok "Codex: Authenticated"
+        else
+            fail "Codex: NOT AUTHENTICATED"
+        fi
+    elif command -v claude &>/dev/null; then
+        if claude auth status &>/dev/null 2>&1; then
+            ok "Claude: Authenticated"
+        else
+            fail "Claude: NOT AUTHENTICATED"
+        fi
     fi
 }
 
@@ -158,15 +168,17 @@ install_missing() {
                 log "Installing Playwright..."
                 npx playwright install && ok "Playwright installed" || warn "Playwright install failed"
                 ;;
-            *"gh:"*|*"Claude:"*)
+            *"gh:"*|*"Codex:"*|*"Claude:"*)
                 log "${YELLOW}$dep kräver manuell autentisering:${NC}"
                 if [[ "$dep" == *"gh:"* ]]; then
                     log "  gh auth login"
+                elif [[ "$dep" == *"Codex:"* ]]; then
+                    log "  codex login"
                 else
                     log "  claude login"
                 fi
                 ;;
-            *"Node.js"*|*"npm"*|*"git"*|*"gh CLI"*|*"Claude CLI"*|*"Docker"*)
+            *"Node.js"*|*"npm"*|*"git"*|*"gh CLI"*|*"Codex/Claude CLI"*|*"Docker"*)
                 log "${YELLOW}$dep måste installeras manuellt${NC}"
                 ;;
         esac

@@ -56,7 +56,7 @@ All notable changes to Ralph Inferno will be documented in this file.
 - **Language agnostic**: Auto-detect build/test commands (npm, cargo, go, make, python)
 - **Custom commands**: Support `build_cmd` and `test_cmd` in config.json
 - **Language setting**: Specs/PRD written in configured language (en, sv, etc.)
-- Smart logging: Always log to `.ralph/logs/claude-raw.log`, errors to `errors.log`
+- Smart logging: Always log to `.ralph/logs/{agent}-raw.log`, errors to `errors.log`
 - `/ralph:status` now shows last error details
 
 ### Changed

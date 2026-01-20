@@ -147,4 +147,4 @@ test('app loads and shows content', async ({ page }) => {
 - [ ] `npx playwright test` passerar
 - [ ] Tailwind fungerar (testa med en klass)
 - [ ] Design tokens från PRD i config
-- [ ] Projektstruktur enligt CLAUDE.md
+- [ ] Projektstruktur enligt AGENTS.md / CLAUDE.md

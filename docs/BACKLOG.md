@@ -52,6 +52,21 @@ Blind Validator Agent: Granskar KOD ENDAST
 "Koden har bug på rad 45" (ärlig feedback)
 ```
 
+**Implementation:**
+```bash
+# Efter implementation (Codex eller Claude)
+codex exec --dangerously-bypass-approvals-and-sandbox - <<'EOF'
+Review this code for bugs. You have NOT seen the spec.
+Only review the code itself.
+$(cat src/checkout.ts)
+EOF
+# Alternativt (Claude):
+# claude --dangerously-skip-permissions -p "
+#   Review this code for bugs. You have NOT seen the spec.
+#   Only review the code itself.
+#   $(cat src/checkout.ts)
+# "
+```
 **Fördelar:**
 - Hittar fler buggar
 - Ingen "jag vet vad jag menade" bias

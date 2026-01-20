@@ -1,12 +1,12 @@
 # Token Optimization
 
-Ralph is designed to be cost-efficient with Claude API tokens.
+Ralph is designed to be cost-efficient with Claude or Codex API tokens.
 
 ## Strategies
 
 ### 1. Fresh Context Per Spec
 
-Each spec runs in a fresh Claude session. This prevents context bloat.
+Each spec runs in a fresh agent session. This prevents context bloat.
 
 ```
 Spec 1: [fresh context] → build → done

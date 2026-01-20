@@ -2,14 +2,14 @@
 
 > **Build while you sleep. Wake to working code.** 🌙 → ☀️
 
-Ralph Inferno is a spec-first autonomous development workflow that runs Claude Code on a VM while you're away.
+Ralph Inferno is a spec-first autonomous development workflow that runs Claude Code or Codex CLI on a VM while you're away.
 
 ---
 
 ## Core Principles
 
 ### 1. Spec-First Development
-Every feature starts as a spec file. Claude reads the spec, implements it, verifies it works, then moves to the next. Specs are the source of truth.
+Every feature starts as a spec file. The agent (Claude or Codex) reads the spec, implements it, verifies it works, then moves to the next. Specs are the source of truth.
 
 ### 2. Two Entry Points
 Ralph supports both greenfield (new apps) and brownfield (existing apps):
@@ -32,6 +32,7 @@ PROJECT-BRIEF.md                    CHANGE-REQUEST.md
                       ↓
                 /ralph:review
 ```
+Each phase has a dedicated Claude command or Codex prompt. You progress through phases linearly.
 
 ### 3. Three Execution Modes
 Control how much verification happens on the VM:
@@ -120,6 +121,8 @@ Push notifications via ntfy.sh when Ralph finishes or needs help. Check status w
          └─────────────────────┘
 ```
 
+Codex CLI equivalents use `/prompts:ralph-*`.
+
 ---
 
 ## Execution Modes Comparison
@@ -139,22 +142,23 @@ Push notifications via ntfy.sh when Ralph finishes or needs help. Check status w
 
 ## Architecture Components
 
-### Slash Commands (10 commands)
+### Commands & Prompts (10)
 
-Located in `.claude/commands/`:
+- Claude Code commands live in `.claude/commands/`
+- Codex CLI prompts live in `~/.codex/prompts/`
 
-| Command | Purpose |
-|---------|---------|
-| `ralph:idea` | **BMAD Brainstorm** - 8 techniques → PROJECT-BRIEF.md |
-| `ralph:discover` | **BMAD Analyst** - Research & validation → PRD.md |
-| `ralph:change-request` | **Brownfield entry** - Analyze changes → CR specs |
-| `ralph:plan` | Generate specs from PRD or Change Request |
-| `ralph:preflight` | Verify requirements before deployment |
-| `ralph:deploy` | Push to GitHub, start Ralph on VM |
-| `ralph:status` | Check Ralph's progress on VM |
-| `ralph:review` | Open tunnels, test the built app |
-| `ralph:abort` | Stop Ralph on VM |
-| `ralph:update` | Update Ralph to latest version |
+| Claude Code | Codex CLI | Purpose |
+|-------------|-----------|---------|
+| `/ralph:idea` | `/prompts:ralph-idea` | **BMAD Brainstorm** - 8 techniques → PROJECT-BRIEF.md |
+| `/ralph:discover` | `/prompts:ralph-discover` | **BMAD Analyst** - Research & validation → PRD.md |
+| `/ralph:change-request` | `/prompts:ralph-change-request` | **Brownfield entry** - Analyze changes → CR specs |
+| `/ralph:plan` | `/prompts:ralph-plan` | Generate specs from PRD or Change Request |
+| `/ralph:preflight` | `/prompts:ralph-preflight` | Verify requirements before deployment |
+| `/ralph:deploy` | `/prompts:ralph-deploy` | Push to GitHub, start Ralph on VM |
+| `/ralph:status` | `/prompts:ralph-status` | Check Ralph's progress on VM |
+| `/ralph:review` | `/prompts:ralph-review` | Open tunnels, test the built app |
+| `/ralph:abort` | `/prompts:ralph-abort` | Stop Ralph on VM |
+| `/ralph:update` | `/prompts:ralph-update` | Update Ralph to latest version |
 
 ### Core Scripts
 
@@ -173,6 +177,7 @@ Located in `.ralph/lib/`:
 | Script | Purpose |
 |--------|---------|
 | `config-utils.sh` | Load config values with defaults |
+| `agent-utils.sh` | Agent selection + execution helpers |
 | `spec-utils.sh` | Find next spec, mark done, checksums |
 | `verify.sh` | Run build verification |
 | `test-loop.sh` | E2E tests + CR generation + design review |
@@ -196,11 +201,11 @@ Located in `.ralph/lib/`:
 │   OUTER LOOP     │    │   MIDDLE LOOP    │    │   INNER LOOP     │
 │   (Your Machine) │ →  │   (Orchestrator) │ →  │   (Per Spec)     │
 ├──────────────────┤    ├──────────────────┤    ├──────────────────┤
-│ /ralph:discover  │    │ ralph.sh         │    │ Claude runs spec │
-│ /ralph:plan      │    │ --orchestrate    │    │ npm run build    │
-│ /ralph:deploy    │    │                  │    │ playwright test  │
-│ /ralph:review    │    │ Retries specs    │    │ Auto-CR on fail  │
-│                  │    │ until all pass   │    │ Design review    │
+│ /ralph:* or /prompts:*   │    │ ralph.sh         │    │ Agent runs spec │
+│ discover/plan/deploy     │    │ --orchestrate    │    │ npm run build    │
+│ review/change-request    │    │                  │    │ playwright test  │
+│                          │    │ Retries specs    │    │ Auto-CR on fail  │
+│                          │    │ until all pass   │    │ Design review    │
 └──────────────────┘    └──────────────────┘    └──────────────────┘
        YOU                   VM (auto)              VM (auto)
 ```
@@ -209,8 +214,8 @@ Located in `.ralph/lib/`:
 
 ```bash
 run_spec() {
-    # 1. Claude runs spec
-    claude -p --dangerously-skip-permissions < "$spec"
+    # 1. Agent runs spec (Claude or Codex)
+    run_agent_prompt "$(cat "$spec")"
 
     # 2. Verify build
     npm run build || retry
@@ -220,7 +225,7 @@ run_spec() {
 
     # 4. Design review (Inferno mode)
     take_screenshots
-    claude --vision "Check against design system" || generate_design_cr && retry
+    run_agent_image "Check against design system" "$screenshot" || generate_design_cr && retry
 
     # 5. Commit & mark done
     git commit && mark_spec_done "$spec"
@@ -265,8 +270,12 @@ notify "⚠️ Needs help"
   "github": {
     "username": "your-username"
   },
+  "agent": "claude",
   "claude": {
     "auth_method": "subscription"
+  },
+  "codex": {
+    "auth_method": "account"
   },
   "notifications": {
     "ntfy_enabled": true,
@@ -311,6 +320,7 @@ When `build_cmd` or `test_cmd` not set, Ralph auto-detects:
 | Integration | Purpose |
 |-------------|---------|
 | Claude Code | Run slash commands, interact with Claude |
+| Codex CLI | Run prompts, interact with Codex |
 | Git | Version control, push specs |
 | GitHub CLI (`gh`) | Create PRs, manage repos |
 | SSH | Connect to VM |
@@ -321,6 +331,7 @@ When `build_cmd` or `test_cmd` not set, Ralph auto-detects:
 | Integration | Purpose |
 |-------------|---------|
 | Claude Code | Execute specs autonomously |
+| Codex CLI | Execute specs autonomously |
 | Git | Clone, commit, push |
 | Build tools | npm, cargo, go, etc. |
 | Playwright | E2E testing |
@@ -371,17 +382,29 @@ When `build_cmd` or `test_cmd` not set, Ralph auto-detects:
 │
 └── phases/               # Phase-specific configs
 
+~/.codex/prompts/
+├── ralph-discover.md       # Discovery prompt
+├── ralph-plan.md           # Planning prompt
+├── ralph-preflight.md      # Preflight checks
+├── ralph-deploy.md         # Deployment prompt
+├── ralph-status.md         # Status check
+├── ralph-review.md         # Review prompt
+├── ralph-change-request.md # CR generation
+├── ralph-idea.md           # Idea capture
+├── ralph-abort.md          # Stop Ralph
+└── ralph-update.md         # Update Ralph
+
 .claude/commands/
-├── ralph:discover.md     # Discovery command
-├── ralph:plan.md         # Planning command
-├── ralph:preflight.md    # Preflight checks
-├── ralph:deploy.md       # Deployment command
-├── ralph:status.md       # Status check
-├── ralph:review.md       # Review command
+├── ralph:discover.md       # Discovery command
+├── ralph:plan.md           # Planning command
+├── ralph:preflight.md      # Preflight checks
+├── ralph:deploy.md         # Deployment command
+├── ralph:status.md         # Status check
+├── ralph:review.md         # Review command
 ├── ralph:change-request.md # CR generation
-├── ralph:idea.md         # Idea capture
-├── ralph:abort.md        # Stop Ralph
-└── ralph:update.md       # Update Ralph
+├── ralph:idea.md           # Idea capture
+├── ralph:abort.md          # Stop Ralph
+└── ralph:update.md         # Update Ralph
 
 .ralph-specs/             # Generated spec files
 ├── 01-setup.md
@@ -397,11 +420,11 @@ Inspired by Ryan Carson's Ralph concept:
 
 | Type | File | Purpose |
 |------|------|---------|
-| Short-term | Spec itself | What Claude should do NOW |
+| Short-term | Spec itself | What the agent should do NOW |
 | Medium-term | Checksums | Which specs are done |
 | Long-term | Git commits | All code built |
 
-**Fresh context per iteration** = Each spec starts with empty Claude session. No accumulated state means no accumulated confusion.
+**Fresh context per iteration** = Each spec starts with an empty agent session. No accumulated state means no accumulated confusion.
 
 ---
 

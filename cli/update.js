@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { homedir } from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -52,7 +53,7 @@ export async function update() {
   // Update core directories
   console.log(chalk.cyan('Updating core files...'));
 
-  const dirs = ['lib', 'scripts', 'templates', '.claude'];
+  const dirs = ['lib', 'scripts', 'templates', '.claude', '.codex'];
   for (const dir of dirs) {
     const src = join(CORE_DIR, dir);
     const dest = join(TARGET_DIR, dir);
@@ -74,6 +75,15 @@ export async function update() {
     await fs.ensureDir('.claude');
     await fs.copy(claudeSrc, claudeDest, { overwrite: true });
     console.log(chalk.green('✅ .claude/commands/ synced to project root'));
+  }
+
+  // Also sync Codex prompts to ~/.codex/prompts
+  const codexPromptsSrc = join(CORE_DIR, '.codex', 'prompts');
+  const codexPromptsDest = join(homedir(), '.codex', 'prompts');
+  if (await fs.pathExists(codexPromptsSrc)) {
+    await fs.ensureDir(codexPromptsDest);
+    await fs.copy(codexPromptsSrc, codexPromptsDest, { overwrite: true });
+    console.log(chalk.green('✅ ~/.codex/prompts/ synced'));
   }
 
   // Config is preserved (we didn't touch it)

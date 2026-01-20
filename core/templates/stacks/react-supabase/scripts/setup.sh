@@ -71,14 +71,14 @@ export default defineConfig({
 });
 EOF
 
-    # Skapa e2e-mapp (Claude ska skapa riktiga tester)
+    # Skapa e2e-mapp (agenten ska skapa riktiga tester)
     mkdir -p e2e
     cat > e2e/.gitkeep << 'EOF'
-# E2E-tester ska skapas av Claude
-# Se CLAUDE.md för krav på E2E-tester
+# E2E-tester ska skapas av agenten
+# Se AGENTS.md / CLAUDE.md för krav på E2E-tester
 # Tester ska verifiera hela användarflödet, inte bara att sidan laddar
 EOF
-    echo "   ✅ Playwright installerat (Claude skapar E2E-tester)"
+    echo "   ✅ Playwright installerat (agenten skapar E2E-tester)"
 else
     echo "   ✅ Playwright config finns"
 fi

@@ -1,0 +1,34 @@
+# AGENTS.md - Projektinstruktioner för Ralph
+
+## Säkerhetsregler
+
+KRITISKT - Kör ALDRIG dessa kommandon:
+- `rm -rf /` eller `rm -rf ~` eller `rm -rf /*`
+- `sudo` (inga sudo-kommandon)
+- `chmod -R 777`
+- `curl | bash` eller `wget | bash`
+- `dd if=` (diskoperationer)
+- `mkfs` (formatera disk)
+- `> /dev/sda` (skriva till disk)
+- `eval $(curl` (köra remote kod)
+
+## Arbetssätt
+
+1. Läs specifikationen noggrant
+2. Implementera ett krav i taget
+3. Kör tester efter varje ändring
+4. Committa inte secrets (API-nycklar, lösenord)
+5. Output `<promise>DONE</promise>` endast när ALLA krav är uppfyllda
+
+## Kodstil
+
+- Skriv tester för ny funktionalitet
+- Använd TypeScript där möjligt
+- Dokumentera komplexa funktioner
+- Håll funktioner korta och fokuserade
+
+## Context Management
+
+- Håll svar koncisa
+- Visa endast relevant kod
+- Undvik onödig output
