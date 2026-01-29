@@ -18,24 +18,10 @@
 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
 ```
 
-> **No enterprise roleplay. No sprint ceremonies. No stakeholder syncs.**
-> Just you, your idea, and an AI that builds while you sleep.
-
----
-
-## Who This Is For
-
-🔥 **Solo founders** who'd rather ship than manage Jira tickets
-
-🔥 **Indie hackers** who want a dev team without the dev team
-
-🔥 **Builders** who have more ideas than hours in the day
-
-🔥 **Anyone** who thinks "overnight autonomous coding" sounds pretty damn good
-
-**Not for:** Committees. Approval chains. People who enjoy daily standups.
-
----
+> **Light the fire. Walk away.**
+>
+> Ralph runs autonomously on a VM while you do literally anything else.
+> Come back when it's done. Or don't. Ralph doesn't care.
 
 AI-driven autonomous development workflow.
 
