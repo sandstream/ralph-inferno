@@ -228,7 +228,8 @@ By continuing, you accept full responsibility for usage.
       message: 'Which CLI will run on the VM?',
       choices: [
         { name: 'Claude Code (default)', value: 'claude' },
-        { name: 'Codex CLI', value: 'codex' }
+        { name: 'Codex CLI', value: 'codex' },
+        { name: 'GitHub Copilot CLI', value: 'copilot' }
       ]
     }
   ]);
@@ -279,7 +280,7 @@ By continuing, you accept full responsibility for usage.
 └─────────────────────────────────────────────────────────────┘
 `));
     }
-  } else {
+  } else if (agentAnswers.agent === 'codex') {
     authAnswers = await inquirer.prompt([
       {
         type: 'rawlist',
@@ -328,6 +329,29 @@ By continuing, you accept full responsibility for usage.
 └─────────────────────────────────────────────────────────────┘
 `));
     }
+  } else if (agentAnswers.agent === 'copilot') {
+    console.log(chalk.cyan(`
+┌─────────────────────────────────────────────────────────────┐
+│  GitHub Copilot CLI Setup                                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  1. Install Copilot CLI:                                    │
+│                                                             │
+│     gh extension install github/copilot-cli                 │
+│                                                             │
+│  2. Start Copilot:                                          │
+│                                                             │
+│     copilot                                                 │
+│                                                             │
+│  3. Use Ralph prompts:                                      │
+│                                                             │
+│     /prompt:ralph-idea "your idea"                          │
+│                                                             │
+│  Requires Copilot Pro/Pro+/Business/Enterprise subscription │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+`));
+    authAnswers.copilotAuth = 'github';
   }
 
   // Build config
@@ -350,8 +374,10 @@ By continuing, you accept full responsibility for usage.
 
   if (agentAnswers.agent === 'claude') {
     config.claude = { auth_method: authAnswers.claudeAuth };
-  } else {
+  } else if (agentAnswers.agent === 'codex') {
     config.codex = { auth_method: authAnswers.codexAuth };
+  } else if (agentAnswers.agent === 'copilot') {
+    config.copilot = { auth_method: authAnswers.copilotAuth || 'github' };
   }
 
   // Install core files
@@ -360,7 +386,7 @@ By continuing, you accept full responsibility for usage.
   await fs.ensureDir(TARGET_DIR);
 
   // Copy core directories
-  const dirs = ['lib', 'scripts', 'templates', '.claude', '.codex'];
+  const dirs = ['lib', 'scripts', 'templates', '.claude', '.codex', '.github'];
   for (const dir of dirs) {
     const src = join(CORE_DIR, dir);
     const dest = join(TARGET_DIR, dir);
@@ -378,6 +404,15 @@ By continuing, you accept full responsibility for usage.
     await fs.ensureDir('.claude');
     await fs.copy(claudeSrc, claudeDest, { overwrite: true });
     console.log(chalk.green('✅ .claude/commands/ synced to project root'));
+  }
+
+  // Also copy .github/prompts to project root (where Copilot CLI reads from)
+  const githubSrc = join(CORE_DIR, '.github', 'prompts');
+  const githubDest = join('.github', 'prompts');
+  if (await fs.pathExists(githubSrc)) {
+    await fs.ensureDir('.github');
+    await fs.copy(githubSrc, githubDest, { overwrite: true });
+    console.log(chalk.green('✅ .github/prompts/ synced to project root'));
   }
 
   // Also sync Codex prompts to ~/.codex/prompts
@@ -422,5 +457,6 @@ exec "$RALPH_DIR/scripts/ralph.sh" "$@"
   console.log(chalk.dim('  3. Then: /ralph:discover → /ralph:plan → /ralph:preflight → /ralph:deploy'));
   console.log('');
   console.log(chalk.dim('Or with Codex CLI: codex then use /prompts:ralph-*'));
+  console.log(chalk.dim('Or with Copilot CLI: copilot then use /prompt:ralph-idea'));
   console.log('');
 }
