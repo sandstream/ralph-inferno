@@ -13,7 +13,7 @@ Analyze PRD and create implementation plan with executable specs.
 
 ## Output
 - `docs/IMPLEMENTATION_PLAN.md` - Overview with epics and tasks
-- `.ralph-specs/*.md` - Executable spec files (this is what Ralph runs on VM)
+- `.ralph-.ralph-specs/*.md` - Executable spec files (this is what Ralph runs on VM)
 
 ## LANGUAGE SETTING
 
@@ -155,7 +155,7 @@ Write test in `e2e/{feature}.spec.ts` that verifies:
 ## SPEC STRUCTURE
 
 ```
-.ralph-specs/
+.ralph-.ralph-specs/
 ├── 01-project-setup.md   ← MUST include Playwright!
 ├── 02-database-schema.md
 ├── 03-auth-context.md
@@ -299,8 +299,8 @@ PLANNING_COMPLETE
 
 Created:
 - docs/IMPLEMENTATION_PLAN.md
-- .ralph-specs/01-project-setup.md
-- .ralph-specs/02-{name}.md
+- .ralph-.ralph-specs/01-project-setup.md
+- .ralph-.ralph-specs/02-{name}.md
 - ... ({total} specs)
 
 Summary:
@@ -309,7 +309,7 @@ Summary:
 - PRD coverage: 100%
 
 Next steps:
-1. Review specs in .ralph-specs/
+1. Review specs in .ralph-.ralph-specs/
 2. Run /prompts:ralph-preflight to verify requirements
 3. Run /prompts:ralph-deploy to push to VM and start building
 ```

@@ -24,7 +24,7 @@ Use the detected language (default: English) for ALL output (CR docs, specs, use
 
 ## Output
 - `docs/CHANGE_REQUEST.md` - Problem documentation
-- `specs/CR-*.md` - New spec files for fixes
+- `.ralph-.ralph-specs/CR-*.md` - New spec files for fixes
 
 ## Instructions
 
@@ -99,7 +99,7 @@ Create `docs/CHANGE_REQUEST.md`:
 Create new spec files for each problem:
 
 ```
-specs/
+.ralph-.ralph-specs/
 ├── CR-01-fix-{bug}.md
 ├── CR-02-complete-{feature}.md
 └── CR-03-add-{missing}.md
@@ -150,7 +150,7 @@ CHANGE_REQUEST_DONE
 
 Created:
 - docs/CHANGE_REQUEST.md
-- X new specs in specs/CR-*.md
+- X new specs in .ralph-.ralph-specs/CR-*.md
 
 Next: Run /prompts:ralph-deploy to push CR specs to VM
 ```

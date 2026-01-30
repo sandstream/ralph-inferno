@@ -59,7 +59,7 @@ generate_cr() {
     fi
 
     local test_output=$(cat .test-output.log 2>/dev/null)
-    local cr_file="specs/CR-fix-${spec_name}.md"
+    local cr_file=".ralph-specs/CR-fix-${spec_name}.md"
 
     log "${YELLOW}Generating CR: $cr_file${NC}"
 
@@ -210,7 +210,7 @@ generate_design_cr() {
         return 1
     fi
 
-    local cr_file="specs/CR-design-${spec_name}.md"
+    local cr_file=".ralph-specs/CR-design-${spec_name}.md"
     log "${YELLOW}Generating design CR: $cr_file${NC}"
 
     local prompt="Design review found issues after spec: $spec_name

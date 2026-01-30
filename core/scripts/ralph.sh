@@ -29,7 +29,7 @@ if [[ "${1:-}" == "--status" ]] || [[ "${1:-}" == "-s" ]]; then
     echo "=== Ralph Status ==="
     echo ""
     if [ -d "specs" ]; then
-        total=$(ls -1 specs/*.md 2>/dev/null | wc -l | tr -d ' ')
+        total=$(ls -1 .ralph-specs/*.md 2>/dev/null | wc -l | tr -d ' ')
         done=$(ls -1 .spec-checksums/*.md5 2>/dev/null | wc -l | tr -d ' ')
         echo "Specs: $done/$total done"
     fi
@@ -192,7 +192,7 @@ Before DONE: run '$build_cmd' and verify it passes."
             if verify_build; then
                 # Run E2E tests if available
                 if ! run_e2e_tests; then
-                    local cr_spec="specs/CR-fix-${spec_name}.md"
+                    local cr_spec=".ralph-specs/CR-fix-${spec_name}.md"
                     if generate_cr "$spec_name" && [ -f "$cr_spec" ]; then
                         log "${YELLOW}Running CR fix...${NC}"
                         run_spec "$cr_spec"
@@ -205,7 +205,7 @@ Before DONE: run '$build_cmd' and verify it passes."
                 # Run design review (optional, after E2E pass)
                 take_screenshots ".screenshots"
                 if ! run_design_review "$spec_name"; then
-                    local design_cr="specs/CR-design-${spec_name}.md"
+                    local design_cr=".ralph-specs/CR-design-${spec_name}.md"
                     if generate_design_cr "$spec_name" && [ -f "$design_cr" ]; then
                         log "${YELLOW}Running design fix...${NC}"
                         run_spec "$design_cr"
@@ -272,10 +272,10 @@ main() {
     fi
 
     # Count total specs (excluding CR-* files)
-    local total_specs=$(ls -1 specs/*.md 2>/dev/null | grep -v "/CR-" | wc -l | tr -d ' ')
+    local total_specs=$(ls -1 .ralph-specs/*.md 2>/dev/null | grep -v "/CR-" | wc -l | tr -d ' ')
 
     if [ "$total_specs" -eq 0 ]; then
-        log "${RED}No specs found i specs/*.md${NC}"
+        log "${RED}No specs found i .ralph-specs/*.md${NC}"
         notify "❌ No specs found"
         exit 1
     fi

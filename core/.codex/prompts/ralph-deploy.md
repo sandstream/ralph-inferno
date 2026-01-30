@@ -10,7 +10,7 @@ Pusha projekt till GitHub och starta Ralph på VM.
 ```
 
 ## Prerequisites
-- IMPLEMENTATION_PLAN.md eller specs/*.md måste finnas
+- IMPLEMENTATION_PLAN.md eller .ralph-.ralph-specs/*.md måste finnas
 - VM måste vara konfigurerad (~/.ralph-vm)
 - GitHub repo måste finnas
 
@@ -26,9 +26,9 @@ Kör denna validering och STOPPA om något saknas:
 echo "=== PRE-DEPLOY VALIDATION ==="
 
 # 1. Specs måste finnas
-SPEC_COUNT=$(ls -1 specs/*.md 2>/dev/null | grep -v "CR-" | wc -l | tr -d ' ')
+SPEC_COUNT=$(ls -1 .ralph-.ralph-specs/*.md 2>/dev/null | grep -v "CR-" | wc -l | tr -d ' ')
 if [ "$SPEC_COUNT" -eq 0 ]; then
-    echo "❌ FATAL: No specs found in specs/"
+    echo "❌ FATAL: No specs found in .ralph-.ralph-specs/"
     echo "   Run /prompts:ralph-plan first to generate specs"
     exit 1
 fi

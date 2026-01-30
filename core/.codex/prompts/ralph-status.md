@@ -29,7 +29,7 @@ echo ""
 
 # Progress
 if [ -d "specs" ]; then
-    total=$(ls -1 specs/*.md 2>/dev/null | grep -v "CR-" | wc -l | tr -d ' ')
+    total=$(ls -1 .ralph-.ralph-specs/*.md 2>/dev/null | grep -v "CR-" | wc -l | tr -d ' ')
     done=$(ls -1 .spec-checksums/*.md5 2>/dev/null | wc -l | tr -d ' ')
     echo "📊 Progress: $done/$total specs"
 fi

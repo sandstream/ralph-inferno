@@ -23,7 +23,7 @@ Analyze PRD or Change Request and create implementation plan with executable spe
 
 ## Output
 - `docs/IMPLEMENTATION_PLAN.md` - Overview with epics and tasks
-- `.ralph-specs/*.md` - Executable spec files (this is what Ralph runs on VM)
+- `.ralph-.ralph-specs/*.md` - Executable spec files (this is what Ralph runs on VM)
 
 ## LANGUAGE SETTING
 
@@ -104,7 +104,7 @@ If input is a Change Request, the planning is simplified:
 
 **CR specs are prefixed with `CR-`:**
 ```
-.ralph-specs/
+.ralph-.ralph-specs/
 ├── 01-project-setup.md      # Original specs (if any)
 ├── 02-auth.md
 ├── CR-01-dark-mode.md       # Change Request specs
@@ -216,7 +216,7 @@ Write test in `e2e/{feature}.spec.ts` that verifies:
 ## SPEC STRUCTURE
 
 ```
-.ralph-specs/
+.ralph-.ralph-specs/
 ├── 01-project-setup.md   ← MUST include Playwright!
 ├── 02-database-schema.md
 ├── 03-auth-context.md
@@ -412,8 +412,8 @@ PLANNING_COMPLETE
 
 Created:
 - docs/IMPLEMENTATION_PLAN.md
-- .ralph-specs/01-project-setup.md
-- .ralph-specs/02-{name}.md
+- .ralph-.ralph-specs/01-project-setup.md
+- .ralph-.ralph-specs/02-{name}.md
 - ... ({total} specs)
 
 Summary:
@@ -422,7 +422,7 @@ Summary:
 - PRD coverage: 100%
 
 Next steps:
-1. Review specs in .ralph-specs/
+1. Review specs in .ralph-.ralph-specs/
 2. Run /ralph:preflight to verify requirements
 3. Run /ralph:deploy to push to VM and start building
 ```
@@ -436,8 +436,8 @@ Scope: {SMALL/MEDIUM/LARGE}
 
 Created:
 - Updated docs/IMPLEMENTATION_PLAN.md (CR section)
-- .ralph-specs/CR-01-{name}.md
-- .ralph-specs/CR-02-{name}.md
+- .ralph-.ralph-specs/CR-01-{name}.md
+- .ralph-.ralph-specs/CR-02-{name}.md
 - ... ({total} CR specs)
 
 Summary:
@@ -446,7 +446,7 @@ Summary:
 - Regression tests: {N}
 
 Next steps:
-1. Review specs in .ralph-specs/CR-*.md
+1. Review specs in .ralph-.ralph-specs/CR-*.md
 2. Run /ralph:preflight to verify requirements
 3. Run /ralph:deploy to push to VM and start building
 ```

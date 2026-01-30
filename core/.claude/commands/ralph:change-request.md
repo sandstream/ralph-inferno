@@ -327,7 +327,7 @@ Create `docs/CHANGE-REQUEST-{date}.md`:
 
 ### For Bug Fixes:
 ```
-.ralph-specs/
+.ralph-.ralph-specs/
 ├── CR-01-fix-{bug}.md
 ├── CR-02-fix-{bug}.md
 └── ...
@@ -335,7 +335,7 @@ Create `docs/CHANGE-REQUEST-{date}.md`:
 
 ### For Features/Enhancements:
 ```
-.ralph-specs/
+.ralph-.ralph-specs/
 ├── CR-01-{feature-part-1}.md
 ├── CR-02-{feature-part-2}.md
 └── ...
@@ -426,8 +426,8 @@ Scope: {SMALL/MEDIUM/LARGE}
 
 Created:
 - docs/CHANGE-REQUEST-{date}.md
-- .ralph-specs/CR-01-{name}.md
-- .ralph-specs/CR-02-{name}.md
+- .ralph-.ralph-specs/CR-01-{name}.md
+- .ralph-.ralph-specs/CR-02-{name}.md
 - ... ({total} specs)
 
 Impact:
@@ -436,7 +436,7 @@ Impact:
 - Database changes: {yes/no}
 
 Next steps:
-1. Review specs in .ralph-specs/CR-*.md
+1. Review specs in .ralph-.ralph-specs/CR-*.md
 2. Run /ralph:preflight to verify requirements
 3. Run /ralph:deploy to push to VM and start building
 ```

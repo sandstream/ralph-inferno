@@ -1,104 +1,99 @@
 # /ralph:preflight - Verify Requirements Before Dev
 
-Generera och verifiera preflight checklist innan development startar.
+Check that all external services and API keys are ready before building.
 
 ## Usage
 ```
 /ralph:preflight
-/ralph:preflight --check    # Verifiera befintlig PREFLIGHT.md
+/ralph:preflight --check    # Re-verify existing PREFLIGHT.md
 ```
 
 ## Prerequisites
-- `docs/PRD.md` måste finnas (kör `/ralph:idea` eller `/ralph:discover` först)
+- `docs/PRD.md` must exist (run `/ralph:idea` first)
 
 ## Instructions
 
-**STEG 1: LÄS PRD**
+**STEP 1: READ PRD**
 
-Läs `docs/PRD.md` och identifiera:
-1. Alla externa integrationer
-2. Alla API:er som behövs
-3. Teknisk stack och hosting
-4. Compliance-krav
+Read `docs/PRD.md` and identify:
+1. All external services needed (Supabase, Stripe, etc.)
+2. All API keys required
+3. Any manual setup steps
 
-**STEG 2: GENERERA PREFLIGHT.md**
+**STEP 2: GENERATE CHECKLIST**
 
-Baserat på PRD, skapa `docs/PREFLIGHT.md` med:
+Based on PRD, create `docs/PREFLIGHT.md`:
 
-1. **Accounts Required**
-   - Lista alla externa tjänster
-   - Inkludera signup-URLs
+```markdown
+# Preflight Checklist
 
-2. **API Keys Needed**
-   - Lista alla miljövariabler
-   - Instruktioner för hur man får dem
+## Status: ⏳ PENDING
 
-3. **Environment Setup**
-   - VM requirements
-   - GitHub setup
-   - Local config
+## Accounts Required
+- [ ] {Service 1} - {signup URL}
+- [ ] {Service 2} - {signup URL}
 
-4. **Manual Setup Steps**
-   - Webhooks som behöver konfigureras
-   - OAuth redirect URLs
-   - DNS om det behövs
+## API Keys / Environment Variables
+- [ ] `{VAR_NAME}` - {how to get it}
+- [ ] `{VAR_NAME}` - {how to get it}
 
-5. **Cost Estimate**
-   - Månadskostnad per tjänst
+## Manual Setup (if any)
+- [ ] {Webhook configuration}
+- [ ] {OAuth redirect URLs}
 
-**STEG 3: VISA FÖR ANVÄNDAREN**
+## Cost Estimate (monthly)
+| Service | Free Tier | Paid |
+|---------|-----------|------|
+| {name} | {limit} | ${x}/mo |
+```
 
-Presentera checklistan och be användaren bekräfta varje punkt:
+**STEP 3: ASK USER TO VERIFY**
+
+Present the checklist:
 
 ```
 📋 PREFLIGHT CHECKLIST
 
-Följande måste vara klart innan Ralph kan bygga:
+Before Ralph can build, you need:
 
 ACCOUNTS:
-  [ ] Stripe test account
-  [ ] Printful developer account
   [ ] Supabase project
+  [ ] Stripe test account (if payments)
 
-API KEYS:
-  [ ] STRIPE_SECRET_KEY
-  [ ] PRINTFUL_API_KEY
-  [ ] SUPABASE_URL
-  [ ] SUPABASE_ANON_KEY
+API KEYS (add to .env):
+  [ ] VITE_SUPABASE_URL
+  [ ] VITE_SUPABASE_ANON_KEY
 
-MANUAL SETUP:
-  [ ] Stripe webhook URL configured
-  [ ] Test products in Printful
-
----
-
-Är allt ovan klart? (ja/nej)
+Is everything above ready? (yes/no)
 ```
 
-**STEG 4: GATE CHECK**
+**STEP 4: UPDATE STATUS**
 
-Om användaren svarar "ja":
+If user says "yes":
+- Update PREFLIGHT.md status to `✅ READY`
+- Print:
 ```
 ✅ PREFLIGHT COMPLETE
 
-docs/PREFLIGHT.md uppdaterad med STATUS: READY FOR DEV
-
-Nästa steg:
-  /ralph:plan    - Skapa specs
-  /ralph:deploy  - Starta bygget
+Next steps:
+  /ralph:plan    - Create implementation specs
+  /ralph:deploy  - Start building
 ```
 
-Om användaren svarar "nej":
+If user says "no":
+- List what's missing
+- Print:
 ```
 ⚠️ PREFLIGHT INCOMPLETE
 
-Vänligen slutför följande innan du fortsätter:
-{lista saknade items}
-
-Kör /ralph:preflight --check när du är klar.
+Complete the items above, then run /ralph:preflight --check
 ```
 
-**VIKTIGT:**
-- STOPPA INTE om preflight inte är klar
-- Användaren måste aktivt bekräfta
-- `/ralph:deploy` ska vägra köra om PREFLIGHT inte är READY
+---
+
+## START NOW
+
+1. Read docs/PRD.md
+2. Identify all external dependencies
+3. Generate checklist
+4. Ask user to confirm

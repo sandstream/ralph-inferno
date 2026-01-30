@@ -1,12 +1,12 @@
-# /ralph:idea - BMAD Brainstorm Mode
+# /ralph:idea - From Idea to PRD
 
-Autonom brainstorm-loop för att utforska en vag idé och skapa en PROJECT-BRIEF.
+Transform a vague idea into a complete PRD through autonomous brainstorming and research.
 
 ## Usage
 ```
-/ralph:idea "Din vaga idé här"
-/ralph:idea "todo-app"
-/ralph:idea "nåt med AI och musik"
+/ralph:idea "Your idea here"
+/ralph:idea "todo-app with AI"
+/ralph:idea "something with music and playlists"
 ```
 
 ## LANGUAGE SETTING
@@ -17,340 +17,220 @@ LANG=$(grep -o '"language"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2
 echo "Language: ${LANG:-en}"
 ```
 
-Use the detected language for ALL output.
+Use the detected language for ALL user-facing output.
 
 ---
 
 ## STEP 1: Choose Mode
 
 ```
-How do you want to brainstorm?
+How do you want to explore this idea?
 
-1) Autonomous (YOLO) - I run all techniques, you review at the end
-2) Interactive - We go through each technique together
+1) Autonomous (YOLO) - I run everything, you review the PRD at the end
+2) Interactive - We go through each phase together
 
 Reply with number:
 ```
 
 ---
 
-## MODE 1: AUTONOMOUS (YOLO)
+## AUTONOMOUS MODE
 
-**DU SKA KÖRA ALLA TEKNIKER AUTONOMT**
+**Run ALL phases below without stopping. Show progress for each phase.**
 
-Kör VARJE teknik nedan. Iterera tills PROJECT-BRIEF är komplett.
-Fråga INTE användaren under loopen - brainstorma själv!
-
-Först när ALLA tekniker är klara → visa PROJECT-BRIEF för användaren.
+Before each phase, print:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 Phase 1/5: EXPLORING THE IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
 ---
 
-## MODE 2: INTERACTIVE
+## PHASE 1: EXPLORING THE IDEA
 
-Gå genom varje teknik med användaren:
+### 5 Whys - Find core motivation
+Ask "why?" 5 times to find the real motivation behind the idea.
 
-1. Kör tekniken
-2. Visa resultatet
-3. Fråga: "Vill du lägga till något? (eller 'next' för nästa teknik)"
-4. Fortsätt till nästa teknik
+### Crazy 8s - Generate 8 variants
+Create 8 different angles/variants of the idea.
 
-Detta ger användaren chans att styra brainstormen och lägga till egna idéer.
+### Devil's Advocate
+Challenge the idea: Does the world need this? What makes it unique?
 
----
-
-## BRAINSTORM TECHNIQUES (Kör alla!)
-
-### Technique 1: 5 WHYS - Hitta kärn-motivation
-
-```
-🔍 5 WHYS
-```
-
-Fråga "varför?" 5 gånger för att hitta den verkliga motivationen:
-
-```
-Idé: "Todo-app"
-├── Varför todo-app? → "Vill lära mig React"
-├── Varför React? → "Populärt, bra för jobb"
-├── Varför just todos? → "Klassiskt projekt"
-├── Varför inte nåt annat? → "Hmm... vet inte"
-└── Vad brinner du för egentligen? → "Gillar musik!"
-
-💡 Insight: Kanske todo-app för musiker?
-```
-
-**Output:** Kärn-motivation och eventuella pivots
+**Output:** Clear direction and differentiator
 
 ---
 
-### Technique 2: CRAZY 8s - 8 varianter
+## PHASE 2: MARKET RESEARCH
 
 ```
-🎨 CRAZY 8s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 Phase 2/5: MARKET RESEARCH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Generera 8 olika varianter/vinklar på idén:
+**WebSearch** for:
+- Top 3-5 competitors
+- Their strengths and weaknesses
+- User reviews (what do people complain about?)
+- Market gaps
 
-```
-Idé: "Todo-app"
-
-1. Standard todo (baseline)
-2. Todo med AI-prioritering
-3. Todo som spel (XP, levels, achievements)
-4. Todo för par/familjer (delad)
-5. Todo med voice input
-6. Todo + kalender hybrid
-7. Todo + pomodoro inbyggt
-8. Todo för specifik nisch (devs, writers, musicians)
-```
-
-**Output:** 8 varianter, markera de mest intressanta
+**Output:** Competitive landscape summary
 
 ---
 
-### Technique 3: COMPETITOR MASHUPS
+## PHASE 3: TARGET USERS
 
 ```
-🔀 MASHUPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 Phase 3/5: TARGET USERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Kombinera kända produkter för nya idéer:
+Create 2 user personas:
+- Demographics, goals, pains
+- Current solution they use
+- What would make them switch
 
-```
-• Todoist + Duolingo = Gamified habits med streaks
-• Things + Spotify = Mood-based productivity playlists
-• TickTick + GitHub = Developer-focused tasks med commits
-• Notion + Tinder = Swipe-baserad prioritering
-• Trello + Strava = Social productivity med leaderboards
-```
+Map core user journeys:
+- Onboarding flow
+- Main action flow
+- Return visit flow
 
-**WebSearch:** Googla de produkter du kombinerar för inspiration
-
-**Output:** 3-5 mashup-idéer
+**Output:** Personas and journey maps
 
 ---
 
-### Technique 4: HOW MIGHT WE (HMW)
+## PHASE 4: FEATURES & TECH
 
 ```
-❓ HOW MIGHT WE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 Phase 4/5: FEATURES & TECH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Omformulera problem till möjligheter:
+### Feature Prioritization (MoSCoW)
+| Priority | Features |
+|----------|----------|
+| **Must** | Critical for MVP |
+| **Should** | Important but not critical |
+| **Could** | Nice-to-have |
+| **Won't** | Out of scope for v1 |
 
-```
-Problem: "Todos är tråkigt"
-→ HMW göra todos mindre tråkigt?
-→ HMW hjälpa folk faktiskt slutföra tasks?
-→ HMW differentiera från 1000 andra todo-appar?
-→ HMW göra productivity fun utan att vara distraherande?
-→ HMW belöna completion utan att bli manipulativt?
-```
+### Tech Stack
+Recommend and validate:
+- Frontend (React/Vue/etc)
+- Backend (Supabase/etc)
+- Hosting (Vercel/etc)
 
-**Output:** 5+ HMW-frågor
+**Output:** Prioritized features + tech recommendations
 
 ---
 
-### Technique 5: SCAMPER
+## PHASE 5: FINAL REVIEW
 
 ```
-🔧 SCAMPER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 Phase 5/5: FINAL REVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Systematisk innovation på idén:
-
-| Letter | Question | Applied to todo-app |
-|--------|----------|---------------------|
-| **S**ubstitute | Vad kan ersättas? | Text → Voice input? |
-| **C**ombine | Vad kan kombineras? | Todo + Calendar? |
-| **A**dapt | Vad kan anpassas från annat? | Gaming mechanics? |
-| **M**odify | Vad kan förstoras/förminskas? | Micro-tasks only? |
-| **P**ut to other use | Annat användningsområde? | Team retrospectives? |
-| **E**liminate | Vad kan tas bort? | No due dates = less stress? |
-| **R**earrange | Annan ordning/struktur? | Priority-first, not list-first? |
-
-**Output:** Minst 3 SCAMPER-insights
+Devil's advocate check:
+- Is MVP scope realistic?
+- Is tech stack right for the problem?
+- Are there risks we missed?
 
 ---
 
-### Technique 6: TARGET AUDIENCE FLIP
+## OUTPUT: docs/PRD.md
 
-```
-👥 AUDIENCE FLIP
-```
-
-Testa idén på oväntat målgrupp:
-
-```
-Todo-app för...
-• Barn (6-10 år) → Enkel, visuell, belöningar
-• Pensionärer → Stor text, medicin-påminnelser
-• ADHD → Dopamine-triggers, no overwhelm
-• Blindsla → Voice-first, screen reader
-• Minimalist → Max 3 todos, inget mer
-```
-
-**Output:** 3+ audience flips med insights
-
----
-
-### Technique 7: DEVIL'S ADVOCATE
-
-```
-😈 DEVIL'S ADVOCATE
-```
-
-Utmana ALLA antaganden:
-
-```
-❓ "Behöver världen verkligen en till todo-app?"
-   → Nej, MEN om vi hittar unik vinkel...
-
-❓ "Kommer du faktiskt använda den själv?"
-   → Måste vara ärlig här...
-
-❓ "Vad händer om ingen vill ha detta?"
-   → Lär mig fortfarande tech stacken
-
-❓ "Varför skulle någon välja din app över Todoist?"
-   → MÅSTE ha differentiator!
-```
-
-**Output:** Alla invändningar + hur de addresseras
-
----
-
-### Technique 8: WEB RESEARCH
-
-```
-🌐 WEB RESEARCH
-```
-
-**WebSearch:** Sök aktivt efter:
-- Konkurrenter och deras reviews
-- "best [category] apps 2024"
-- "[category] app market size"
-- Common complaints om existerande lösningar
-- Tekniska lösningar och API:er
-
-**Output:** Research findings sammanfattade
-
----
-
-## ITERATION LOOP
-
-Efter varje teknik, checka:
-
-```
-┌─────────────────────────────────────────┐
-│         COMPLETENESS CHECK              │
-├─────────────────────────────────────────┤
-│ □ 5 Whys - Kärn-motivation klar?        │
-│ □ Crazy 8s - 8 varianter genererade?    │
-│ □ Mashups - 3+ kombinationer?           │
-│ □ HMW - 5+ frågor formulerade?          │
-│ □ SCAMPER - 3+ insights?                │
-│ □ Audience Flip - 3+ perspektiv?        │
-│ □ Devil's Advocate - Invändningar ok?   │
-│ □ Web Research - Konkurrenter kända?    │
-│ □ Riktning vald - En fokuserad idé?     │
-└─────────────────────────────────────────┘
-```
-
-**Om något saknas:** Kör den tekniken igen eller utforska djupare.
-
-**Om motsägelser:** Lös dem innan du går vidare.
-
----
-
-## DEFINITION OF DONE - Brainstorm
-
-| Kriterium | Verifiering |
-|-----------|-------------|
-| ✅ Alla 8 tekniker körda | Checklist komplett |
-| ✅ Kärn-motivation identifierad | 5 Whys genomförd |
-| ✅ Minst 8 varianter utforskade | Crazy 8s klar |
-| ✅ Minst 3 mashup-idéer | Competitor riffs |
-| ✅ HMW-frågor formulerade | 5+ frågor |
-| ✅ SCAMPER-insights | 3+ insights |
-| ✅ Audience flips | 3+ perspektiv |
-| ✅ Devil's advocate passerad | Alla invändningar addresserade |
-| ✅ Web research gjord | Konkurrenter kända |
-| ✅ EN fokuserad riktning vald | Inte 5 idéer, EN idé |
-
----
-
-## OUTPUT: PROJECT-BRIEF.md
-
-När ALLA tekniker är klara, skapa `docs/PROJECT-BRIEF.md`:
+Create `docs/PRD.md` with this structure:
 
 ```markdown
-# [Arbetsnamn] - Project Brief
+# [Product Name] - Product Requirements Document
 
-## The Idea (One-liner)
-{En mening som beskriver idén}
+## Executive Summary
+{2-3 sentences summarizing the product}
 
-## Core Motivation (from 5 Whys)
-{Varför bygga detta? Den verkliga anledningen}
+## Problem & Solution
+{What problem are we solving? Why does this matter?}
 
-## The Hook / Differentiator
-{Vad gör detta unikt? Varför välja detta över alternativen?}
+## Target Users
+### Primary Persona: {Name}
+{Description with goals and pains}
 
-## Target Audience
-{Vem är detta för? Primary och secondary}
-
-## Key HMW Questions
-{De viktigaste How Might We-frågorna att lösa}
-
-## Explored Alternatives
-{Kort sammanfattning av Crazy 8s och Mashups - vad övervägdes?}
+### Secondary Persona: {Name}
+{Description}
 
 ## Competitive Landscape
-{Konkurrenter och deras styrkor/svagheter}
+{Top competitors and our differentiation}
 
-## Risks & Concerns (from Devil's Advocate)
-{Invändningar och hur de addresseras}
+## User Journeys
+### Onboarding
+{Step by step flow}
 
-## Initial Feature Ideas
-{Brainstormade features, INTE prioriterade ännu}
+### Core Action
+{Main user flow}
 
-## Open Questions for Discovery
-{Frågor som behöver mer research i nästa fas}
+## Feature Requirements
 
-## Confidence Level
-{Låg/Medium/Hög - hur säker är vi på riktningen?}
+### Must Have (MVP)
+| Feature | Description | Acceptance Criteria |
+|---------|-------------|---------------------|
+| ... | ... | ... |
+
+### Should Have
+{List}
+
+### Could Have
+{List}
+
+### Won't Have (v1)
+{Explicit out of scope}
+
+## Technical Architecture
+- Frontend: {choice + rationale}
+- Backend: {choice + rationale}
+- Database: {choice + rationale}
+- Hosting: {choice + rationale}
+
+## Risks & Mitigations
+{Known risks and how to address them}
+
+## Success Metrics
+{How do we know this succeeded?}
 
 ---
-
-*Generated by Ralph Brainstorm Mode*
-*Next step: /ralph:discover to create full PRD*
+*Generated by Ralph*
+*Next: /ralph:plan to create implementation specs*
 ```
 
 ---
 
-## NÄR KLAR
+## WHEN DONE
 
-Visa PROJECT-BRIEF för användaren och skriv:
+Show summary and write:
 
 ```
-BRAINSTORM_COMPLETE
+✅ IDEA_COMPLETE
 
-Project Brief sparad till: docs/PROJECT-BRIEF.md
+PRD saved to: docs/PRD.md
 
-Sammanfattning:
-- Idé: {one-liner}
-- Hook: {differentiator}
-- Confidence: {level}
+Summary:
+- Product: {name}
+- Differentiator: {hook}
+- MVP Features: {count} must-haves
+- Tech: {stack summary}
 
-Nästa steg:
-1. Granska PROJECT-BRIEF.md
-2. Kör /ralph:discover för att skapa fullständig PRD med research
+Next step: /ralph:plan
 ```
 
 ---
 
 ## START NOW
 
-Börja med Technique 1: 5 WHYS på användarens idé.
-Kör sedan ALLA tekniker autonomt.
-Visa INTE delresultat - kör hela loopen först.
+1. Ask for mode (Autonomous/Interactive)
+2. Run all 5 phases
+3. Generate PRD.md
+4. Show completion message

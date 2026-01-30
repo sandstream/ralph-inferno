@@ -41,17 +41,17 @@ log() { echo -e "[$(date +%H:%M:%S)] $1"; }
 
 # Check if all specs are done
 all_specs_done() {
-    local total=$(ls -1 specs/*.md 2>/dev/null | grep -v "^specs/CR-" | wc -l | tr -d ' ')
+    local total=$(ls -1 .ralph-specs/*.md 2>/dev/null | grep -v "^.ralph-specs/CR-" | wc -l | tr -d ' ')
     local done=$(ls -1 .spec-checksums/*.md5 2>/dev/null | wc -l | tr -d ' ')
     [ "$done" -ge "$total" ] && [ "$total" -gt 0 ]
 }
 
 # Check for failed specs (not done after ralph.sh run)
 has_failures() {
-    local incomplete=$(ls -1 specs/*.md 2>/dev/null | while read spec; do
+    local incomplete=$(ls -1 .ralph-specs/*.md 2>/dev/null | while read spec; do
         local name=$(basename "$spec" .md)
         [ ! -f ".spec-checksums/${name}.md5" ] && echo "$spec"
-    done | grep -v "^specs/CR-" | wc -l | tr -d ' ')
+    done | grep -v "^.ralph-specs/CR-" | wc -l | tr -d ' ')
     [ "$incomplete" -gt 0 ]
 }
 
@@ -71,9 +71,9 @@ main() {
     log "${CYAN}╚════════════════════════════════════════╝${NC}"
 
     # Verify specs exist before starting
-    local total_specs=$(ls -1 specs/*.md 2>/dev/null | grep -v "^specs/CR-" | wc -l | tr -d ' ')
+    local total_specs=$(ls -1 .ralph-specs/*.md 2>/dev/null | grep -v "^.ralph-specs/CR-" | wc -l | tr -d ' ')
     if [ "$total_specs" -eq 0 ]; then
-        log "${RED}Inga specs hittades i specs/*.md${NC}"
+        log "${RED}Inga specs hittades i .ralph-specs/*.md${NC}"
         notify "❌ Orchestrator: Inga specs hittades"
         return 1
     fi
@@ -119,7 +119,7 @@ main() {
     # Show what's still incomplete
     log ""
     log "Incomplete specs:"
-    ls -1 specs/*.md 2>/dev/null | while read spec; do
+    ls -1 .ralph-specs/*.md 2>/dev/null | while read spec; do
         local name=$(basename "$spec" .md)
         [ ! -f ".spec-checksums/${name}.md5" ] && echo "  ❌ $name"
     done | grep -v "CR-"
