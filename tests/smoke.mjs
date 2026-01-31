@@ -8,11 +8,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const repoRoot = dirname(__dirname);
 
-const claudeCommand = join(repoRoot, 'core', '.claude', 'commands', 'ralph:discover.md');
-const codexPrompt = join(repoRoot, 'core', '.codex', 'prompts', 'ralph-discover.md');
+const claudeCommand = join(repoRoot, 'core', '.claude', 'commands', 'ralph:idea.md');
+const codexPrompt = join(repoRoot, 'core', '.codex', 'prompts', 'ralph-idea.md');
 
-assert.ok(existsSync(claudeCommand), 'Missing Claude command: ralph:discover.md');
-assert.ok(existsSync(codexPrompt), 'Missing Codex prompt: ralph-discover.md');
+assert.ok(existsSync(claudeCommand), 'Missing Claude command: ralph:idea.md');
+assert.ok(existsSync(codexPrompt), 'Missing Codex prompt: ralph-idea.md');
 
 const result = spawnSync(process.execPath, [
   join(repoRoot, 'bin', 'ralph-inferno.js'),
