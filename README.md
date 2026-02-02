@@ -1,5 +1,7 @@
 # 🔥 Ralph Inferno
 
+> **🚨 DEPRECATED:** This project has been superseded by [Symbiont](https://github.com/sandstream/symbiont). See [DEPRECATED.md](./DEPRECATED.md) for migration details.
+
 ```
 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
 🔥                                              🔥
